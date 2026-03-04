@@ -757,9 +757,12 @@ function card(label, ref, texto, delay, evangelho=false) {
     </div>`;
 }
 
+let liturgiaAtual = null;
+
 function renderLiturgia(dados) {
   const L = dados.liturgia;
   if (!L) { mostrarErro('Resposta da API inválida.'); return; }
+  liturgiaAtual = L; // salva para a reflexão
 
   let html = `<div class="tempo-badge">🕊️ ${L.tipo||L.liturgia||'Liturgia do Dia'}</div>`;
   let d = 0;
@@ -847,17 +850,6 @@ async function instalarApp() {
   deferredPrompt = null;
 }
 
-
-// ══ REFLEXÃO COM IA ══
-// Guarda as leituras após carregar para usar na reflexão
-let liturgiaAtual = null;
-
-// Intercepta renderLiturgia para salvar dados
-const _renderOriginal = renderLiturgia;
-function renderLiturgia(dados) {
-  liturgiaAtual = dados.liturgia;
-  _renderOriginal(dados);
-}
 
 async function gerarReflexao() {
   if (!liturgiaAtual) return;
