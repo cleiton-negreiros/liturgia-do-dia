@@ -1,0 +1,35 @@
+{
+  "name": "Liturgia do Dia",
+  "short_name": "Liturgia",
+  "description": "A Palavra de Deus para cada dia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF6EF",
+  "theme_color": "#6B1A1A",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "categories": ["religion", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Liturgia de Hoje",
+      "short_name": "Hoje",
+      "description": "Ver a liturgia do dia de hoje",
+      "url": "/?data=hoje",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

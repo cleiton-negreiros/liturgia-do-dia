@@ -4,6 +4,17 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Liturgia do Dia</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#6B1A1A"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Liturgia"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+  <meta name="description" content="A Palavra de Deus para cada dia — leituras da Santa Missa."/>
+
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
   <style>
     /* ══ TEMA CLARO ══ */
@@ -392,6 +403,33 @@
       main { padding: 1.5rem 1rem 3rem; }
       .toggle-label { display: none; }
     }
+
+    /* ══ BOTÃO INSTALAR PWA ══ */
+    .btn-instalar-wrap {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 500;
+    }
+    #btn-instalar {
+      display: none;
+      align-items: center;
+      gap: .6rem;
+      background: var(--vinho);
+      color: var(--ouro-claro);
+      border: none;
+      font-family: 'Lato', sans-serif;
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .7rem 1.2rem;
+      border-radius: 3px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      transition: all .2s;
+    }
+    #btn-instalar:hover { opacity: .9; transform: translateY(-2px); }
+    #btn-instalar .icone { font-size: 1.1rem; }
   </style>
 </head>
 <body>
@@ -429,6 +467,14 @@
     Buscando a liturgia do dia...
   </div>
 </main>
+
+
+<!-- BOTÃO INSTALAR -->
+<div class="btn-instalar-wrap">
+  <button id="btn-instalar" onclick="instalarApp()">
+    <span class="icone">📲</span> Instalar App
+  </button>
+</div>
 
 <!-- MODAL CALENDÁRIO -->
 <div class="modal-overlay" id="modal-overlay" onclick="fecharSeOverlay(event)">
@@ -669,6 +715,39 @@ async function carregarLiturgia() {
   } catch(e) {
     mostrarErro('Não foi possível conectar com o servidor. ' + e.message);
   }
+}
+
+// ══ PWA — SERVICE WORKER ══
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('✝ Service Worker registrado'))
+      .catch(e => console.warn('SW falhou:', e));
+  });
+}
+
+// ══ PWA — BOTÃO DE INSTALAÇÃO ══
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('btn-instalar').style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('btn-instalar').style.display = 'none';
+  deferredPrompt = null;
+});
+
+async function instalarApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('btn-instalar').style.display = 'none';
+  }
+  deferredPrompt = null;
 }
 
 // ══ INIT ══
