@@ -140,17 +140,6 @@
     .btn-share.copiar:hover { background: var(--vinho); border-color: var(--vinho); color: #fff; }
     .btn-share.copiar.copiado { background: var(--vinho); border-color: var(--vinho); color: #fff; }
 
-    /* ══ REFLEXÃO IA ══ */
-    .reflexao-wrap { margin-top: 2.5rem; border-top: 1px solid var(--linha); padding-top: 2rem; }
-    .reflexao-titulo { display: flex; align-items: center; gap: .6rem; font-family: 'Cinzel', serif; font-size: 1rem; color: var(--vinho); letter-spacing: .08em; margin-bottom: 1.2rem; }
-    .ia-badge { font-family: 'Lato', sans-serif; font-size: .6rem; letter-spacing: .15em; background: var(--ouro); color: #1a1008; padding: .15rem .45rem; border-radius: 2px; font-weight: 700; text-transform: uppercase; }
-    .btn-reflexao { display: flex; align-items: center; gap: .6rem; background: none; border: 1.5px solid var(--ouro); color: var(--ouro); font-family: 'Lato', sans-serif; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; padding: .6rem 1.3rem; border-radius: 2px; cursor: pointer; transition: all .25s; }
-    .btn-reflexao:hover { background: var(--ouro); color: #1a1008; }
-    .btn-reflexao:disabled { opacity: .5; cursor: not-allowed; }
-    .reflexao-box { margin-top: 1.4rem; background: var(--aclamacao-bg); border: 1px solid var(--linha); border-left: 3px solid var(--ouro); padding: 1.5rem 1.8rem; border-radius: 0 4px 4px 0; animation: fadeUp .4s ease; transition: background .3s; }
-    .reflexao-texto { font-size: 1.08rem; line-height: 2; color: var(--texto); }
-    .reflexao-erro { margin-top: 1rem; font-family: 'Lato', sans-serif; font-size: .85rem; color: #c0392b; }
-
     /* ══ BOTÃO INSTALAR PWA ══ */
     .btn-instalar-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; }
     #btn-instalar { display: none; align-items: center; gap: .6rem; background: var(--vinho); color: var(--ouro-claro); border: none; font-family: 'Lato', sans-serif; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; padding: .7rem 1.2rem; border-radius: 3px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,.25); transition: all .2s; }
@@ -246,7 +235,6 @@ hojeRef.setHours(0,0,0,0);
 let dataSel     = new Date(hojeRef);
 let calMes      = hojeRef.getMonth();
 let calAno      = hojeRef.getFullYear();
-let liturgiaAtual = null;  // guarda leituras para a reflexão
 
 // ══════════════════════════════════════════
 // UTILITÁRIOS
@@ -391,8 +379,6 @@ function card(label, ref, texto, delay, evangelho=false) {
 function renderLiturgia(dados) {
   const L = dados.liturgia;
   if (!L) { mostrarErro('Resposta da API inválida.'); return; }
-
-  // Salva para usar na reflexão
   liturgiaAtual = L;
 
   let html = `<div class="tempo-badge">🕊️ ${L.tipo||L.liturgia||'Liturgia do Dia'}</div>`;
@@ -434,19 +420,6 @@ function renderLiturgia(dados) {
       </div>
     </div>\`;
 
-  // Seção de reflexão com IA
-  html += `
-    <div class="reflexao-wrap">
-      <div class="reflexao-titulo">
-        ✦ Reflexão do Dia
-        <span class="ia-badge">IA</span>
-      </div>
-      <button class="btn-reflexao" id="btn-reflexao" onclick="gerarReflexao()">
-        ✨ Gerar Reflexão com IA
-      </button>
-      <div id="reflexao-conteudo"></div>
-    </div>`;
-
   html += `
     <div class="divisor">✦ ✦ ✦</div>
     <p class="fonte-link">Fonte: <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia Diária (open source)</a></p>`;
@@ -456,9 +429,7 @@ function renderLiturgia(dados) {
 }
 
 async function carregarLiturgia() {
-  mostrarLoading();
-  liturgiaAtual = null;
-  try {
+  mostrarLoading();  try {
     const r = await fetch(`/api/liturgia?data=${dataISO(dataSel)}`);
     const dados = await r.json();
     if (!dados.sucesso) { mostrarErro(dados.erro||'Erro desconhecido.'); return; }
@@ -468,6 +439,8 @@ async function carregarLiturgia() {
   }
 }
 
+
+let liturgiaAtual = null; // usado pelo compartilhar
 
 // ══════════════════════════════════════════
 // COMPARTILHAR
@@ -525,54 +498,7 @@ async function copiarLeitura() {
   }
 }
 
-// ══════════════════════════════════════════
-// REFLEXÃO COM IA
-// ══════════════════════════════════════════
-async function gerarReflexao() {
-  if (!liturgiaAtual) return;
 
-  const btn = document.getElementById('btn-reflexao');
-  const box = document.getElementById('reflexao-conteudo');
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Gerando reflexão...';
-  box.innerHTML = '';
-
-  try {
-    const resp = await fetch('/api/reflexao', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        evangelho:       liturgiaAtual.evangelho,
-        primeiraLeitura: liturgiaAtual.primeiraLeitura,
-        salmo:           liturgiaAtual.salmo,
-        data:            dataISO(dataSel)
-      })
-    });
-
-    const dados = await resp.json();
-
-    if (!dados.sucesso) {
-      box.innerHTML = `<p class="reflexao-erro">⚠️ ${dados.erro}</p>`;
-      btn.disabled = false;
-      btn.textContent = '✨ Gerar Reflexão com IA';
-      return;
-    }
-
-    box.innerHTML = `
-      <div class="reflexao-box">
-        <p class="reflexao-texto">${dados.reflexao.replace(/\n/g, '<br>')}</p>
-      </div>`;
-
-    btn.disabled = false;
-    btn.textContent = '🔄 Gerar nova reflexão';
-
-  } catch(e) {
-    box.innerHTML = `<p class="reflexao-erro">⚠️ Erro de conexão: ${e.message}</p>`;
-    btn.disabled = false;
-    btn.textContent = '✨ Gerar Reflexão com IA';
-  }
-}
 
 // ══════════════════════════════════════════
 // PWA
