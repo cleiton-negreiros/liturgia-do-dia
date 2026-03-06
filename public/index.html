@@ -4,8 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Liturgia do Dia</title>
-
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json"/>
   <meta name="theme-color" content="#6B1A1A"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -13,155 +11,188 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Liturgia"/>
   <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
-  <meta name="description" content="A Palavra de Deus para cada dia — leituras da Santa Missa."/>
-
+  <meta name="description" content="A Palavra de Deus para cada dia — leituras da Santa Missa e Laudes."/>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
-
   <style>
-    /* ══ TEMA CLARO ══ */
     :root {
-      --ouro:        #C8A96E;
-      --ouro-claro:  #e8c98a;
-      --vinho:       #6B1A1A;
-      --vinho2:      #8B2222;
-      --bg:          #FAF6EF;
-      --bg-card:     #ffffff;
-      --bg-bar:      #ffffff;
-      --texto:       #2C2016;
-      --cinza:       #7a6e64;
-      --linha:       #e0d5c3;
-      --aclamacao-bg:#fdf8f0;
+      --ouro:#C8A96E; --ouro-claro:#e8c98a; --vinho:#6B1A1A; --vinho2:#8B2222;
+      --bg:#FAF6EF; --bg-card:#fff; --bg-bar:#fff;
+      --texto:#2C2016; --cinza:#7a6e64; --linha:#e0d5c3; --aclamacao-bg:#fdf8f0;
     }
-
-    /* ══ TEMA ESCURO ══ */
     [data-tema="escuro"] {
-      --vinho:       #c05a52;
-      --vinho2:      #d96a60;
-      --bg:          #131110;
-      --bg-card:     #1c1916;
-      --bg-bar:      #181512;
-      --texto:       #e6ddd0;
-      --cinza:       #998e84;
-      --linha:       #2c2620;
-      --aclamacao-bg:#1b1712;
+      --vinho:#c05a52; --vinho2:#d96a60;
+      --bg:#131110; --bg-card:#1c1916; --bg-bar:#181512;
+      --texto:#e6ddd0; --cinza:#998e84; --linha:#2c2620; --aclamacao-bg:#1b1712;
     }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--texto);font-family:'EB Garamond',serif;min-height:100vh;transition:background .3s,color .3s;}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--texto); font-family: 'EB Garamond', serif; min-height: 100vh; transition: background .3s, color .3s; }
+    /* HEADER */
+    header{background:var(--vinho);padding:1.8rem 1.5rem 1.3rem;text-align:center;position:relative;overflow:hidden;transition:background .3s;}
+    header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--vinho2) 0%,var(--vinho) 70%);opacity:.65;}
+    header::after{content:'✦';position:absolute;font-size:18rem;color:rgba(200,169,110,0.05);top:-4rem;right:-3rem;line-height:1;pointer-events:none;}
+    .header-inner{position:relative;z-index:1;}
+    .site-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,5vw,2.5rem);color:var(--ouro);letter-spacing:.12em;text-transform:uppercase;}
+    .site-subtitle{font-family:'Lato',sans-serif;font-weight:300;color:rgba(255,255,255,.5);font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;margin-top:.3rem;}
+    .ornamento{color:var(--ouro);font-size:1rem;margin:.7rem 0 .2rem;opacity:.7;}
 
-    /* ══ HEADER ══ */
-    header { background: var(--vinho); padding: 2rem 1.5rem 1.4rem; text-align: center; position: relative; overflow: hidden; transition: background .3s; }
-    header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top, var(--vinho2) 0%, var(--vinho) 70%); opacity: .65; }
-    header::after { content: '✦'; position: absolute; font-size: 18rem; color: rgba(200,169,110,0.05); top: -4rem; right: -3rem; line-height: 1; pointer-events: none; }
-    .header-inner { position: relative; z-index: 1; }
-    .site-title { font-family: 'Cinzel', serif; font-size: clamp(1.6rem, 5vw, 2.6rem); color: var(--ouro); letter-spacing: .12em; text-transform: uppercase; }
-    .site-subtitle { font-family: 'Lato', sans-serif; font-weight: 300; color: rgba(255,255,255,.5); font-size: .78rem; letter-spacing: .25em; text-transform: uppercase; margin-top: .3rem; }
-    .ornamento { color: var(--ouro); font-size: 1.1rem; margin: .8rem 0 .3rem; opacity: .7; }
+    /* TOGGLE TEMA */
+    .toggle-tema{position:absolute;top:.9rem;right:1.2rem;z-index:10;display:flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;}
+    .toggle-label{font-family:'Lato',sans-serif;font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:.1em;text-transform:uppercase;}
+    .toggle-switch{width:38px;height:21px;background:rgba(255,255,255,.2);border-radius:99px;position:relative;transition:background .3s;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;}
+    .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform .3s;}
+    [data-tema="escuro"] .toggle-switch{background:var(--ouro);border-color:var(--ouro);}
+    [data-tema="escuro"] .toggle-switch::after{transform:translateX(17px);}
 
-    /* ══ TOGGLE TEMA ══ */
-    .toggle-tema { position: absolute; top: 1rem; right: 1.2rem; z-index: 10; display: flex; align-items: center; gap: .45rem; cursor: pointer; user-select: none; }
-    .toggle-label { font-family: 'Lato', sans-serif; font-size: .68rem; color: rgba(255,255,255,.55); letter-spacing: .1em; text-transform: uppercase; }
-    .toggle-switch { width: 38px; height: 21px; background: rgba(255,255,255,.2); border-radius: 99px; position: relative; transition: background .3s; border: 1.5px solid rgba(255,255,255,.2); flex-shrink: 0; }
-    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; background: #fff; border-radius: 50%; transition: transform .3s; }
-    [data-tema="escuro"] .toggle-switch { background: var(--ouro); border-color: var(--ouro); }
-    [data-tema="escuro"] .toggle-switch::after { transform: translateX(17px); }
-    .toggle-icone { font-size: .95rem; }
+    /* BARRA DATA */
+    .data-bar{background:var(--bg-bar);border-bottom:2px solid var(--linha);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;transition:background .3s,border-color .3s;}
+    .data-texto{font-family:'Cinzel',serif;font-size:.82rem;color:var(--vinho);letter-spacing:.07em;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:opacity .2s;}
+    .data-texto:hover{opacity:.7;}
+    .nav-datas{display:flex;gap:.4rem;}
+    .nav-datas button{background:none;border:1.5px solid var(--linha);color:var(--cinza);font-family:'Lato',sans-serif;font-size:.76rem;padding:.28rem .75rem;border-radius:2px;cursor:pointer;transition:all .2s;letter-spacing:.05em;}
+    .nav-datas button:hover,.nav-datas button.ativo{background:var(--vinho);border-color:var(--vinho);color:#fff;}
 
-    /* ══ BARRA DATA ══ */
-    .data-bar { background: var(--bg-bar); border-bottom: 2px solid var(--linha); padding: .6rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; transition: background .3s, border-color .3s; }
-    .data-texto { font-family: 'Cinzel', serif; font-size: .82rem; color: var(--vinho); letter-spacing: .07em; cursor: pointer; display: flex; align-items: center; gap: .4rem; transition: opacity .2s; }
-    .data-texto:hover { opacity: .7; }
-    .nav-datas { display: flex; gap: .4rem; }
-    .nav-datas button { background: none; border: 1.5px solid var(--linha); color: var(--cinza); font-family: 'Lato', sans-serif; font-size: .76rem; padding: .28rem .75rem; border-radius: 2px; cursor: pointer; transition: all .2s; letter-spacing: .05em; }
-    .nav-datas button:hover, .nav-datas button.ativo { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+    /* TABS */
+    .tabs-bar{background:var(--bg-bar);border-bottom:2px solid var(--linha);display:flex;transition:background .3s,border-color .3s;}
+    .tab-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;padding:.7rem .5rem;font-family:'Lato',sans-serif;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cinza);cursor:pointer;transition:all .2s;margin-bottom:-2px;}
+    .tab-btn.ativo{color:var(--vinho);border-bottom-color:var(--ouro);}
+    .tab-btn:hover:not(.ativo){color:var(--texto);}
 
-    /* ══ MODAL CALENDÁRIO ══ */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-    .modal-overlay.aberto { display: flex; }
-    .modal-cal { background: var(--bg-card); border: 1px solid var(--linha); border-radius: 6px; padding: 1.4rem; width: min(370px, 94vw); box-shadow: 0 24px 70px rgba(0,0,0,.3); animation: popIn .22s ease; transition: background .3s, border-color .3s; }
-    @keyframes popIn { from { opacity:0; transform:scale(.92) translateY(-8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-    .cal-topo { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
-    .cal-mes-ano { font-family: 'Cinzel', serif; font-size: .95rem; color: var(--vinho); letter-spacing: .06em; }
-    .cal-nav { display: flex; gap: .3rem; }
-    .cal-nav button { background: none; border: 1.5px solid var(--linha); color: var(--cinza); width: 28px; height: 28px; border-radius: 2px; cursor: pointer; font-size: 1.1rem; line-height: 1; transition: all .2s; }
-    .cal-nav button:hover { background: var(--vinho); border-color: var(--vinho); color:#fff; }
-    .cal-selects { display: flex; gap: .5rem; margin-bottom: .9rem; }
-    .cal-selects select { flex: 1; background: var(--bg); border: 1.5px solid var(--linha); color: var(--texto); font-family: 'Lato', sans-serif; font-size: .8rem; padding: .28rem .4rem; border-radius: 2px; outline: none; cursor: pointer; transition: background .3s, color .3s, border-color .3s; }
-    .cal-selects select:focus { border-color: var(--vinho); }
-    .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: .35rem; }
-    .cal-grid-header span { text-align: center; font-family: 'Lato', sans-serif; font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cinza); }
-    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
-    .cal-dia { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-family: 'Lato', sans-serif; font-size: .8rem; border-radius: 50%; cursor: pointer; transition: background .15s, color .15s; color: var(--texto); }
-    .cal-dia:hover:not(.vazio) { background: var(--linha); }
-    .cal-dia.vazio { cursor: default; pointer-events: none; }
-    .cal-dia.hoje  { background: var(--vinho); color: #fff; font-weight: 600; }
-    .cal-dia.selecionado { background: var(--ouro); color: #1a1008; font-weight: 700; }
-    .cal-dia.hoje.selecionado { background: var(--ouro); color: #1a1008; }
-    .modal-fechar { display: block; width: 100%; margin-top: .9rem; padding: .45rem; background: none; border: 1.5px solid var(--linha); color: var(--cinza); font-family: 'Lato', sans-serif; font-size: .78rem; letter-spacing: .1em; border-radius: 2px; cursor: pointer; transition: all .2s; }
-    .modal-fechar:hover { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+    /* MAIN */
+    main{max-width:780px;margin:0 auto;padding:2rem 1.5rem 4rem;}
 
-    /* ══ CONTEÚDO ══ */
-    main { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
-    .loading { text-align: center; padding: 4rem 1rem; color: var(--cinza); font-family: 'Lato', sans-serif; }
-    .loading-icone { font-size: 2.5rem; display: block; margin-bottom: 1rem; animation: girar 2s linear infinite; }
-    @keyframes girar { to { transform: rotate(360deg); } }
-    .erro-box { background: var(--bg-card); border: 1.5px solid var(--linha); border-left: 4px solid #c0392b; padding: 1.5rem; border-radius: 4px; margin: 2rem 0; }
-    .erro-box h3 { color: #c0392b; font-family: 'Cinzel', serif; margin-bottom: .5rem; }
-    .erro-box p  { font-family: 'Lato', sans-serif; font-size: .9rem; color: var(--cinza); line-height: 1.6; }
-    .tempo-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--vinho); color: var(--ouro-claro); font-family: 'Lato', sans-serif; font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; padding: .35rem .9rem; border-radius: 2px; margin-bottom: 1.8rem; }
-    .leitura-card { border-left: 3px solid var(--ouro); padding: 1.6rem 0 1.6rem 1.6rem; margin-bottom: 2rem; animation: fadeUp .5s ease both; }
-    .leitura-card + .leitura-card { border-top: 1px solid var(--linha); padding-top: 2rem; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    .leitura-label { font-family: 'Lato', sans-serif; font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--cinza); margin-bottom: .3rem; }
-    .leitura-referencia { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--vinho); font-weight: 600; margin-bottom: 1rem; }
-    .leitura-texto { font-size: 1.1rem; line-height: 1.9; color: var(--texto); white-space: pre-wrap; }
-    .leitura-aclamacao { background: var(--aclamacao-bg); border: 1px solid var(--linha); border-left: 3px solid var(--ouro); padding: 1.2rem 1.5rem; font-style: italic; font-size: 1rem; color: var(--vinho); text-align: center; margin: .5rem 0 1.5rem; line-height: 1.7; transition: background .3s; }
-    .evangelho-header { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
-    .evangelho-icone { width: 38px; height: 38px; background: var(--vinho); color: var(--ouro); display: flex; align-items: center; justify-content: center; font-size: 1rem; border-radius: 50%; flex-shrink: 0; }
-    .divisor { text-align: center; color: var(--ouro); font-size: 1.2rem; margin: 2.5rem 0; letter-spacing: .5rem; opacity: .5; }
-    .fonte-link { text-align: center; font-family: 'Lato', sans-serif; font-size: .8rem; color: var(--cinza); margin-top: 1rem; }
-    .fonte-link a { color: var(--vinho); }
+    /* PAINEL */
+    .painel{display:none;}
+    .painel.ativo{display:block;}
 
+    /* LOADING / ERRO */
+    .loading{text-align:center;padding:4rem 1rem;color:var(--cinza);font-family:'Lato',sans-serif;}
+    .loading-icone{font-size:2.5rem;display:block;margin-bottom:1rem;animation:girar 2s linear infinite;}
+    @keyframes girar{to{transform:rotate(360deg);}}
+    .erro-box{background:var(--bg-card);border:1.5px solid var(--linha);border-left:4px solid #c0392b;padding:1.5rem;border-radius:4px;margin:2rem 0;}
+    .erro-box h3{color:#c0392b;font-family:'Cinzel',serif;margin-bottom:.5rem;}
+    .erro-box p{font-family:'Lato',sans-serif;font-size:.9rem;color:var(--cinza);line-height:1.6;}
 
-    /* ══ COMPARTILHAR ══ */
-    .share-wrap { margin-top: 2rem; padding-top: 1.8rem; border-top: 1px solid var(--linha); }
-    .share-titulo { font-family: 'Lato', sans-serif; font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--cinza); margin-bottom: .9rem; }
-    .share-botoes { display: flex; gap: .6rem; flex-wrap: wrap; }
-    .btn-share {
-      display: inline-flex; align-items: center; gap: .5rem;
-      font-family: 'Lato', sans-serif; font-size: .76rem;
-      letter-spacing: .1em; text-transform: uppercase;
-      padding: .55rem 1.1rem; border-radius: 2px;
-      cursor: pointer; border: none; transition: all .2s; text-decoration: none;
+    /* BADGE */
+    .tempo-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--vinho);color:var(--ouro-claro);font-family:'Lato',sans-serif;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;padding:.35rem .9rem;border-radius:2px;margin-bottom:1.8rem;}
+
+    /* CARDS LEITURA */
+    .leitura-card{border-left:3px solid var(--ouro);padding:1.5rem 0 1.5rem 1.5rem;margin-bottom:1.8rem;animation:fadeUp .5s ease both;}
+    .leitura-card+.leitura-card{border-top:1px solid var(--linha);padding-top:1.8rem;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+    .leitura-label{font-family:'Lato',sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cinza);margin-bottom:.3rem;}
+    .leitura-referencia{font-family:'Cinzel',serif;font-size:1rem;color:var(--vinho);font-weight:600;margin-bottom:.9rem;}
+    .leitura-texto{font-size:1.1rem;line-height:1.9;color:var(--texto);white-space:pre-wrap;}
+
+    /* ACLAMAÇÃO */
+    .leitura-aclamacao{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid var(--ouro);padding:1.1rem 1.4rem;font-style:italic;font-size:1rem;color:var(--vinho);text-align:center;margin:.5rem 0 1.5rem;line-height:1.7;transition:background .3s;}
+
+    /* EVANGELHO */
+    .evangelho-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;}
+    .evangelho-icone{width:36px;height:36px;background:var(--vinho);color:var(--ouro);display:flex;align-items:center;justify-content:center;font-size:.95rem;border-radius:50%;flex-shrink:0;}
+
+    /* ORAÇÃO (coleta, ofertório, etc.) */
+    .oracao-card{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid rgba(200,169,110,0.4);padding:1.1rem 1.4rem;margin-bottom:1.5rem;animation:fadeUp .5s ease both;transition:background .3s;}
+    .oracao-card .leitura-texto{font-size:1.05rem;font-style:italic;}
+
+    /* COMPARTILHAR */
+    .share-wrap{margin-top:1.8rem;padding-top:1.8rem;border-top:1px solid var(--linha);}
+    .share-titulo{font-family:'Lato',sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cinza);margin-bottom:.9rem;}
+    .share-botoes{display:flex;gap:.6rem;flex-wrap:wrap;}
+    .btn-share{display:inline-flex;align-items:center;gap:.5rem;font-family:'Lato',sans-serif;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;padding:.55rem 1.1rem;border-radius:2px;cursor:pointer;border:none;transition:all .2s;text-decoration:none;}
+    .btn-share.whatsapp{background:#25D366;color:#fff;}
+    .btn-share.whatsapp:hover{background:#1ebe5d;}
+    .btn-share.copiar{background:none;border:1.5px solid var(--linha);color:var(--cinza);}
+    .btn-share.copiar:hover,.btn-share.copiar.copiado{background:var(--vinho);border-color:var(--vinho);color:#fff;}
+
+    /* DIVISOR */
+    .divisor{text-align:center;color:var(--ouro);font-size:1.2rem;margin:2.5rem 0;letter-spacing:.5rem;opacity:.5;}
+    .fonte-link{text-align:center;font-family:'Lato',sans-serif;font-size:.8rem;color:var(--cinza);margin-top:1rem;}
+    .fonte-link a{color:var(--vinho);}
+
+    /* LAUDES */
+    .laudes-secao{margin-bottom:1.8rem;animation:fadeUp .5s ease both;}
+    .laudes-secao-titulo{font-family:'Cinzel',serif;font-size:.95rem;color:var(--vinho);letter-spacing:.08em;margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid var(--linha);}
+    .laudes-texto{font-size:1.08rem;line-height:1.9;white-space:pre-wrap;color:var(--texto);}
+
+    /* ANOTAÇÕES */
+    .notas-wrap{margin-top:0;}
+    .notas-titulo{font-family:'Cinzel',serif;font-size:1rem;color:var(--vinho);letter-spacing:.08em;margin-bottom:.5rem;}
+    .notas-sub{font-family:'Lato',sans-serif;font-size:.78rem;color:var(--cinza);margin-bottom:1rem;line-height:1.5;}
+    .notas-textarea{
+      width:100%;min-height:200px;
+      background:var(--bg-card);
+      border:1.5px solid var(--linha);
+      border-radius:3px;
+      padding:1rem 1.2rem;
+      font-family:'EB Garamond',serif;
+      font-size:1.08rem;
+      line-height:1.8;
+      color:var(--texto);
+      resize:vertical;
+      transition:border-color .2s, background .3s, color .3s;
+      outline:none;
     }
-    .btn-share.whatsapp { background: #25D366; color: #fff; }
-    .btn-share.whatsapp:hover { background: #1ebe5d; }
-    .btn-share.copiar { background: none; border: 1.5px solid var(--linha); color: var(--cinza); }
-    .btn-share.copiar:hover { background: var(--vinho); border-color: var(--vinho); color: #fff; }
-    .btn-share.copiar.copiado { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+    .notas-textarea:focus{border-color:var(--ouro);}
+    .notas-textarea::placeholder{color:var(--cinza);opacity:.7;}
+    .notas-acoes{display:flex;align-items:center;gap:.8rem;margin-top:.8rem;}
+    .btn-salvar{background:var(--vinho);color:var(--ouro-claro);border:none;font-family:'Lato',sans-serif;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;padding:.55rem 1.3rem;border-radius:2px;cursor:pointer;transition:all .2s;}
+    .btn-salvar:hover{opacity:.85;}
+    .notas-status{font-family:'Lato',sans-serif;font-size:.78rem;color:var(--cinza);opacity:0;transition:opacity .5s;}
+    .notas-status.visivel{opacity:1;}
+    .notas-historico{margin-top:2rem;}
+    .notas-historico-titulo{font-family:'Lato',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cinza);margin-bottom:.8rem;}
+    .nota-item{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid var(--ouro);padding:1rem 1.2rem;margin-bottom:.8rem;border-radius:0 3px 3px 0;cursor:pointer;transition:background .2s;}
+    .nota-item:hover{background:var(--linha);}
+    .nota-item-data{font-family:'Cinzel',serif;font-size:.78rem;color:var(--vinho);margin-bottom:.3rem;}
+    .nota-item-preview{font-size:.95rem;color:var(--cinza);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-    /* ══ BOTÃO INSTALAR PWA ══ */
-    .btn-instalar-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 500; }
-    #btn-instalar { display: none; align-items: center; gap: .6rem; background: var(--vinho); color: var(--ouro-claro); border: none; font-family: 'Lato', sans-serif; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; padding: .7rem 1.2rem; border-radius: 3px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,.25); transition: all .2s; }
-    #btn-instalar:hover { opacity: .9; transform: translateY(-2px); }
+    /* MODAL CALENDÁRIO */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .modal-overlay.aberto{display:flex;}
+    .modal-cal{background:var(--bg-card);border:1px solid var(--linha);border-radius:6px;padding:1.4rem;width:min(370px,94vw);box-shadow:0 24px 70px rgba(0,0,0,.3);animation:popIn .22s ease;transition:background .3s,border-color .3s;}
+    @keyframes popIn{from{opacity:0;transform:scale(.92) translateY(-8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+    .cal-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;}
+    .cal-mes-ano{font-family:'Cinzel',serif;font-size:.95rem;color:var(--vinho);letter-spacing:.06em;}
+    .cal-nav{display:flex;gap:.3rem;}
+    .cal-nav button{background:none;border:1.5px solid var(--linha);color:var(--cinza);width:28px;height:28px;border-radius:2px;cursor:pointer;font-size:1.1rem;line-height:1;transition:all .2s;}
+    .cal-nav button:hover{background:var(--vinho);border-color:var(--vinho);color:#fff;}
+    .cal-selects{display:flex;gap:.5rem;margin-bottom:.9rem;}
+    .cal-selects select{flex:1;background:var(--bg);border:1.5px solid var(--linha);color:var(--texto);font-family:'Lato',sans-serif;font-size:.8rem;padding:.28rem .4rem;border-radius:2px;outline:none;cursor:pointer;transition:background .3s,color .3s,border-color .3s;}
+    .cal-selects select:focus{border-color:var(--vinho);}
+    .cal-grid-header{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:.35rem;}
+    .cal-grid-header span{text-align:center;font-family:'Lato',sans-serif;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cinza);}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+    .cal-dia{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'Lato',sans-serif;font-size:.8rem;border-radius:50%;cursor:pointer;transition:background .15s,color .15s;color:var(--texto);}
+    .cal-dia:hover:not(.vazio){background:var(--linha);}
+    .cal-dia.vazio{cursor:default;pointer-events:none;}
+    .cal-dia.hoje{background:var(--vinho);color:#fff;font-weight:600;}
+    .cal-dia.selecionado{background:var(--ouro);color:#1a1008;font-weight:700;}
+    .modal-fechar{display:block;width:100%;margin-top:.9rem;padding:.45rem;background:none;border:1.5px solid var(--linha);color:var(--cinza);font-family:'Lato',sans-serif;font-size:.78rem;letter-spacing:.1em;border-radius:2px;cursor:pointer;transition:all .2s;}
+    .modal-fechar:hover{background:var(--vinho);border-color:var(--vinho);color:#fff;}
 
-    footer { text-align: center; padding: 2rem; border-top: 1px solid var(--linha); font-family: 'Lato', sans-serif; font-size: .75rem; color: var(--cinza); letter-spacing: .08em; transition: border-color .3s; }
-    footer a { color: var(--vinho); text-decoration: none; }
+    /* INSTALL BTN */
+    .btn-instalar-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;}
+    #btn-instalar{display:none;align-items:center;gap:.6rem;background:var(--vinho);color:var(--ouro-claro);border:none;font-family:'Lato',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;padding:.7rem 1.2rem;border-radius:3px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:all .2s;}
+    #btn-instalar:hover{opacity:.9;transform:translateY(-2px);}
 
-    @media (max-width: 520px) {
-      .data-bar { flex-direction: column; align-items: flex-start; }
-      main { padding: 1.5rem 1rem 3rem; }
-      .toggle-label { display: none; }
+    footer{text-align:center;padding:2rem;border-top:1px solid var(--linha);font-family:'Lato',sans-serif;font-size:.75rem;color:var(--cinza);letter-spacing:.08em;transition:border-color .3s;}
+    footer a{color:var(--vinho);text-decoration:none;}
+
+    @media(max-width:520px){
+      .data-bar{flex-direction:column;align-items:flex-start;}
+      main{padding:1.5rem 1rem 3rem;}
+      .toggle-label{display:none;}
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="toggle-tema" onclick="alternarTema()" title="Alternar modo escuro">
+  <div class="toggle-tema" onclick="alternarTema()">
     <span class="toggle-label" id="label-tema">ESCURO</span>
     <div class="toggle-switch"></div>
-    <span class="toggle-icone" id="icone-tema">🌙</span>
+    <span id="icone-tema">🌙</span>
   </div>
   <div class="header-inner">
     <p class="site-subtitle">† Palavra de Deus para hoje</p>
@@ -171,7 +202,7 @@
 </header>
 
 <div class="data-bar">
-  <span class="data-texto" onclick="abrirCalendario()" title="Escolher outra data">
+  <span class="data-texto" onclick="abrirCalendario()">
     📅 <span id="data-hoje"></span>
   </span>
   <nav class="nav-datas">
@@ -181,18 +212,42 @@
   </nav>
 </div>
 
-<main id="conteudo">
-  <div class="loading">
-    <span class="loading-icone">✝</span>
-    Buscando a liturgia do dia...
+<!-- TABS -->
+<div class="tabs-bar">
+  <button class="tab-btn ativo" onclick="mudarTab('missa')">✝ Santa Missa</button>
+  <button class="tab-btn"       onclick="mudarTab('laudes')">🌅 Laudes</button>
+  <button class="tab-btn"       onclick="mudarTab('notas')">📝 Anotações</button>
+</div>
+
+<main>
+  <!-- PAINEL MISSA -->
+  <div class="painel ativo" id="painel-missa">
+    <div class="loading"><span class="loading-icone">✝</span>Buscando a liturgia do dia...</div>
+  </div>
+
+  <!-- PAINEL LAUDES -->
+  <div class="painel" id="painel-laudes">
+    <div class="loading"><span class="loading-icone">🌅</span>Buscando as Laudes...</div>
+  </div>
+
+  <!-- PAINEL ANOTAÇÕES -->
+  <div class="painel" id="painel-notas">
+    <div class="notas-wrap">
+      <h2 class="notas-titulo">📝 Minhas Anotações</h2>
+      <p class="notas-sub" id="notas-sub">Registre seus insights e meditações sobre as leituras de hoje.</p>
+      <textarea class="notas-textarea" id="notas-texto" placeholder="Escreva aqui seus pensamentos, insights e orações sobre as leituras do dia..."></textarea>
+      <div class="notas-acoes">
+        <button class="btn-salvar" onclick="salvarNota()">💾 Salvar</button>
+        <span class="notas-status" id="notas-status">✅ Salvo!</span>
+      </div>
+      <div class="notas-historico" id="notas-historico"></div>
+    </div>
   </div>
 </main>
 
-<!-- BOTÃO INSTALAR PWA -->
+<!-- INSTALL BTN -->
 <div class="btn-instalar-wrap">
-  <button id="btn-instalar" onclick="instalarApp()">
-    📲 Instalar App
-  </button>
+  <button id="btn-instalar" onclick="instalarApp()">📲 Instalar App</button>
 </div>
 
 <!-- MODAL CALENDÁRIO -->
@@ -219,321 +274,317 @@
 </div>
 
 <footer>
-  Liturgia do Dia · Fonte: <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia Diária</a> · Feito com fé 🙏
+  Liturgia do Dia · <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia</a> · Laudes: <a href="https://liturgia.cancaonova.com" target="_blank">Canção Nova</a> · Feito com fé 🙏
 </footer>
 
 <script>
-// ══════════════════════════════════════════
-// CONSTANTES E ESTADO
-// ══════════════════════════════════════════
+// ══ CONSTANTES ══
 const MESES    = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const DIAS_SEM = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 
-const hojeRef = new Date();
-hojeRef.setHours(0,0,0,0);
+// ══ ESTADO ══
+const hojeRef = new Date(); hojeRef.setHours(0,0,0,0);
+let dataSel   = new Date(hojeRef);
+let calMes    = hojeRef.getMonth();
+let calAno    = hojeRef.getFullYear();
+let tabAtiva  = 'missa';
+let laudesCarregadas = false;
+let liturgiaAtual = null;
 
-let dataSel     = new Date(hojeRef);
-let calMes      = hojeRef.getMonth();
-let calAno      = hojeRef.getFullYear();
+// ══ UTILS ══
+function dataISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dataBR(d) { return `${DIAS_SEM[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`; }
+function mesmoDia(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
 
-// ══════════════════════════════════════════
-// UTILITÁRIOS
-// ══════════════════════════════════════════
-function dataISO(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+// ══ TEMA ══
+function alternarTema(){
+  const esc = document.documentElement.getAttribute('data-tema')==='escuro';
+  const n   = esc?'claro':'escuro';
+  document.documentElement.setAttribute('data-tema',n);
+  document.getElementById('label-tema').textContent = esc?'ESCURO':'CLARO';
+  document.getElementById('icone-tema').textContent  = esc?'🌙':'☀️';
+  localStorage.setItem('liturgia-tema',n);
 }
-function dataBR(d) {
-  return `${DIAS_SEM[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
-}
-function mesmoDia(a,b) {
-  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
-}
-
-// ══════════════════════════════════════════
-// MODO ESCURO
-// ══════════════════════════════════════════
-function alternarTema() {
-  const escuro = document.documentElement.getAttribute('data-tema') === 'escuro';
-  const novo   = escuro ? 'claro' : 'escuro';
-  document.documentElement.setAttribute('data-tema', novo);
-  document.getElementById('label-tema').textContent = escuro ? 'ESCURO' : 'CLARO';
-  document.getElementById('icone-tema').textContent  = escuro ? '🌙' : '☀️';
-  localStorage.setItem('liturgia-tema', novo);
-}
-function initTema() {
-  const salvo = localStorage.getItem('liturgia-tema') || 'claro';
-  document.documentElement.setAttribute('data-tema', salvo);
-  document.getElementById('label-tema').textContent = salvo === 'escuro' ? 'CLARO'  : 'ESCURO';
-  document.getElementById('icone-tema').textContent  = salvo === 'escuro' ? '☀️' : '🌙';
+function initTema(){
+  const s = localStorage.getItem('liturgia-tema')||'claro';
+  document.documentElement.setAttribute('data-tema',s);
+  document.getElementById('label-tema').textContent = s==='escuro'?'CLARO':'ESCURO';
+  document.getElementById('icone-tema').textContent  = s==='escuro'?'☀️':'🌙';
 }
 
-// ══════════════════════════════════════════
-// NAVEGAÇÃO DE DATAS
-// ══════════════════════════════════════════
-function irParaDia(offset) {
-  const d = new Date(hojeRef);
-  d.setDate(hojeRef.getDate() + offset);
-  irParaData(d);
+// ══ TABS ══
+function mudarTab(tab){
+  tabAtiva = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('ativo', ['missa','laudes','notas'][i]===tab);
+  });
+  document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
+  document.getElementById('painel-'+tab).classList.add('ativo');
+
+  if(tab==='laudes' && !laudesCarregadas) carregarLaudes();
+  if(tab==='notas') renderNotas();
 }
-function irParaHoje() { irParaData(new Date(hojeRef)); }
-function irParaData(d) {
-  dataSel = new Date(d);
-  dataSel.setHours(0,0,0,0);
-  document.getElementById('data-hoje').textContent = dataBR(dataSel);
+
+// ══ NAVEGAÇÃO ══
+function irParaDia(offset){ const d=new Date(hojeRef); d.setDate(hojeRef.getDate()+offset); irParaData(d); }
+function irParaHoje(){ irParaData(new Date(hojeRef)); }
+function irParaData(d){
+  dataSel=new Date(d); dataSel.setHours(0,0,0,0);
+  document.getElementById('data-hoje').textContent=dataBR(dataSel);
   syncBotoes();
-  carregarLiturgia();
+  laudesCarregadas=false;
+  liturgiaAtual=null;
+  carregarMissa();
+  if(tabAtiva==='laudes') carregarLaudes();
+  if(tabAtiva==='notas') renderNotas();
 }
-function syncBotoes() {
-  const ontem  = new Date(hojeRef); ontem.setDate(hojeRef.getDate()-1);
-  const amanha = new Date(hojeRef); amanha.setDate(hojeRef.getDate()+1);
-  document.getElementById('btn-ontem').classList.toggle('ativo',  mesmoDia(dataSel, ontem));
-  document.getElementById('btn-hoje').classList.toggle('ativo',   mesmoDia(dataSel, hojeRef));
-  document.getElementById('btn-amanha').classList.toggle('ativo', mesmoDia(dataSel, amanha));
+function syncBotoes(){
+  const ont=new Date(hojeRef); ont.setDate(hojeRef.getDate()-1);
+  const ama=new Date(hojeRef); ama.setDate(hojeRef.getDate()+1);
+  document.getElementById('btn-ontem').classList.toggle('ativo', mesmoDia(dataSel,ont));
+  document.getElementById('btn-hoje').classList.toggle('ativo',  mesmoDia(dataSel,hojeRef));
+  document.getElementById('btn-amanha').classList.toggle('ativo',mesmoDia(dataSel,ama));
 }
 
-// ══════════════════════════════════════════
-// CALENDÁRIO
-// ══════════════════════════════════════════
-function abrirCalendario() {
-  calMes = dataSel.getMonth();
-  calAno = dataSel.getFullYear();
-  preencherSelects();
-  renderCal();
-  document.getElementById('modal-overlay').classList.add('aberto');
+// ══ CALENDÁRIO ══
+function abrirCalendario(){ calMes=dataSel.getMonth(); calAno=dataSel.getFullYear(); preencherSelects(); renderCal(); document.getElementById('modal-overlay').classList.add('aberto'); }
+function fecharCalendario(){ document.getElementById('modal-overlay').classList.remove('aberto'); }
+function fecharSeOverlay(e){ if(e.target===document.getElementById('modal-overlay')) fecharCalendario(); }
+function navegarCal(d){ calMes+=d; if(calMes<0){calMes=11;calAno--;} if(calMes>11){calMes=0;calAno++;} syncSelects(); renderCal(); }
+function irParaMesAno(){ calMes=parseInt(document.getElementById('sel-mes').value); calAno=parseInt(document.getElementById('sel-ano').value); renderCal(); }
+function preencherSelects(){
+  document.getElementById('sel-mes').innerHTML=MESES.map((m,i)=>`<option value="${i}"${i===calMes?' selected':''}>${m}</option>`).join('');
+  const ay=new Date().getFullYear(); let o='';
+  for(let a=ay-5;a<=ay+5;a++) o+=`<option value="${a}"${a===calAno?' selected':''}>${a}</option>`;
+  document.getElementById('sel-ano').innerHTML=o;
 }
-function fecharCalendario() {
-  document.getElementById('modal-overlay').classList.remove('aberto');
-}
-function fecharSeOverlay(e) {
-  if (e.target === document.getElementById('modal-overlay')) fecharCalendario();
-}
-function navegarCal(delta) {
-  calMes += delta;
-  if (calMes < 0)  { calMes = 11; calAno--; }
-  if (calMes > 11) { calMes = 0;  calAno++; }
-  syncSelects();
-  renderCal();
-}
-function irParaMesAno() {
-  calMes = parseInt(document.getElementById('sel-mes').value);
-  calAno = parseInt(document.getElementById('sel-ano').value);
-  renderCal();
-}
-function preencherSelects() {
-  document.getElementById('sel-mes').innerHTML = MESES.map((m,i)=>`<option value="${i}"${i===calMes?' selected':''}>${m}</option>`).join('');
-  const ay = new Date().getFullYear();
-  let o = '';
-  for (let a=ay-5; a<=ay+5; a++) o+=`<option value="${a}"${a===calAno?' selected':''}>${a}</option>`;
-  document.getElementById('sel-ano').innerHTML = o;
-}
-function syncSelects() {
-  document.getElementById('sel-mes').value = calMes;
-  document.getElementById('sel-ano').value = calAno;
-}
-function renderCal() {
-  document.getElementById('cal-mes-ano').textContent = `${MESES[calMes]} ${calAno}`;
-  const grid = document.getElementById('cal-grid');
-  grid.innerHTML = '';
-  const inicio  = new Date(calAno, calMes, 1).getDay();
-  const diasMes = new Date(calAno, calMes+1, 0).getDate();
-  for (let i=0; i<inicio; i++) {
-    const c = document.createElement('div'); c.className='cal-dia vazio'; grid.appendChild(c);
-  }
-  for (let d=1; d<=diasMes; d++) {
-    const c = document.createElement('div'); c.className = 'cal-dia'; c.textContent = d;
-    const dt = new Date(calAno, calMes, d);
-    if (mesmoDia(dt, hojeRef)) c.classList.add('hoje');
-    if (mesmoDia(dt, dataSel)) c.classList.add('selecionado');
-    c.addEventListener('click', () => { fecharCalendario(); irParaData(new Date(calAno, calMes, d)); });
-    grid.appendChild(c);
+function syncSelects(){ document.getElementById('sel-mes').value=calMes; document.getElementById('sel-ano').value=calAno; }
+function renderCal(){
+  document.getElementById('cal-mes-ano').textContent=`${MESES[calMes]} ${calAno}`;
+  const g=document.getElementById('cal-grid'); g.innerHTML='';
+  const ini=new Date(calAno,calMes,1).getDay();
+  const dim=new Date(calAno,calMes+1,0).getDate();
+  for(let i=0;i<ini;i++){const c=document.createElement('div');c.className='cal-dia vazio';g.appendChild(c);}
+  for(let d=1;d<=dim;d++){
+    const c=document.createElement('div'); c.className='cal-dia'; c.textContent=d;
+    const dt=new Date(calAno,calMes,d);
+    if(mesmoDia(dt,hojeRef)) c.classList.add('hoje');
+    if(mesmoDia(dt,dataSel)) c.classList.add('selecionado');
+    c.addEventListener('click',()=>{ fecharCalendario(); irParaData(new Date(calAno,calMes,d)); });
+    g.appendChild(c);
   }
 }
 
-// ══════════════════════════════════════════
-// RENDER LEITURAS
-// ══════════════════════════════════════════
-function mostrarLoading() {
-  document.getElementById('conteudo').innerHTML = `<div class="loading"><span class="loading-icone">✝</span>Buscando a liturgia do dia...</div>`;
+// ══ MISSA ══
+function card(label, ref, texto, delay, evan=false){
+  return `<div class="leitura-card" style="animation-delay:${delay}s">
+    ${evan?`<div class="evangelho-header"><div class="evangelho-icone">✝</div><div>
+      <p class="leitura-label">${label}</p>${ref?`<p class="leitura-referencia">${ref}</p>`:''}
+    </div></div>`:`<p class="leitura-label">${label}</p>${ref?`<p class="leitura-referencia">${ref}</p>`:''}`}
+    <p class="leitura-texto">${texto||''}</p></div>`;
 }
-function mostrarErro(msg) {
-  document.getElementById('conteudo').innerHTML = `<div class="erro-box"><h3>⚠️ Não foi possível carregar</h3><p>${msg}</p></div>`;
-}
-
-function card(label, ref, texto, delay, evangelho=false) {
-  return `
-    <div class="leitura-card" style="animation-delay:${delay}s">
-      ${evangelho ? `
-        <div class="evangelho-header">
-          <div class="evangelho-icone">✝</div>
-          <div>
-            <p class="leitura-label">${label}</p>
-            ${ref ? `<p class="leitura-referencia">${ref}</p>` : ''}
-          </div>
-        </div>` : `
-        <p class="leitura-label">${label}</p>
-        ${ref ? `<p class="leitura-referencia">${ref}</p>` : ''}`}
-      <p class="leitura-texto">${texto||''}</p>
-    </div>`;
+function oracao(label, texto, delay){
+  if(!texto) return '';
+  return `<div class="oracao-card" style="animation-delay:${delay}s">
+    <p class="leitura-label">${label}</p>
+    <p class="leitura-texto">${texto}</p></div>`;
 }
 
-function renderLiturgia(dados) {
-  const L = dados.liturgia;
-  if (!L) { mostrarErro('Resposta da API inválida.'); return; }
-  liturgiaAtual = L;
-
-  let html = `<div class="tempo-badge">🕊️ ${L.tipo||L.liturgia||'Liturgia do Dia'}</div>`;
-  let d = 0;
-
-  if (L.primeiraLeitura) {
-    html += card('1ª Leitura', L.primeiraLeitura.referencia, L.primeiraLeitura.texto, d); d+=.1;
+async function carregarMissa(){
+  document.getElementById('painel-missa').innerHTML=`<div class="loading"><span class="loading-icone">✝</span>Buscando a liturgia do dia...</div>`;
+  liturgiaAtual=null;
+  try{
+    const r=await fetch(`/api/liturgia?data=${dataISO(dataSel)}`);
+    const dados=await r.json();
+    if(!dados.sucesso){ document.getElementById('painel-missa').innerHTML=`<div class="erro-box"><h3>⚠️ Não foi possível carregar</h3><p>${dados.erro}</p></div>`; return; }
+    renderMissa(dados);
+  } catch(e){
+    document.getElementById('painel-missa').innerHTML=`<div class="erro-box"><h3>⚠️ Erro de conexão</h3><p>${e.message}</p></div>`;
   }
-  if (L.salmo) {
-    const t = (L.salmo.refrao ? `Refrão: ${L.salmo.refrao}\n\n` : '') + (L.salmo.texto||'');
-    html += card('Salmo Responsorial', L.salmo.referencia, t, d); d+=.1;
-  }
-  if (L.segundaLeitura) {
-    html += card('2ª Leitura', L.segundaLeitura.referencia, L.segundaLeitura.texto, d); d+=.1;
-  }
-  if (L.aclamacao && L.aclamacao.texto) {
-    html += `<div class="leitura-aclamacao" style="animation-delay:${d}s">${L.aclamacao.texto}</div>`; d+=.1;
-  }
-  if (L.evangelho) {
-    html += card('Evangelho', L.evangelho.referencia, L.evangelho.texto, d, true);
-  }
-  if (!L.primeiraLeitura && !L.evangelho) {
-    html += `<div class="leitura-card"><p class="leitura-label">Leituras</p><p class="leitura-texto">${JSON.stringify(L,null,2)}</p></div>`;
-  }
+}
 
+function renderMissa(dados){
+  const L=dados.liturgia;
+  if(!L){ document.getElementById('painel-missa').innerHTML=`<div class="erro-box"><h3>⚠️ Resposta inválida</h3></div>`; return; }
+  liturgiaAtual=L;
+  let html=`<div class="tempo-badge">🕊️ ${L.tipo||L.liturgia||'Liturgia do Dia'}</div>`;
+  let d=0;
 
-  // Botões de compartilhar
-  html += \`
-    <div class="share-wrap">
-      <p class="share-titulo">Compartilhar</p>
-      <div class="share-botoes">
-        <a class="btn-share whatsapp" id="btn-whatsapp" href="#" target="_blank">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.558 4.126 1.528 5.858L.057 23.868a.5.5 0 00.609.61l6.085-1.46A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.89 0-3.663-.497-5.2-1.371l-.374-.216-3.862.927.961-3.784-.234-.393A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-          WhatsApp
-        </a>
-        <button class="btn-share copiar" id="btn-copiar" onclick="copiarLeitura()">
-          📋 Copiar texto
-        </button>
-      </div>
-    </div>\`;
+  // Antífona da Entrada
+  if(L.antifonaEntrada) { html+=oracao('Antífona da Entrada',L.antifonaEntrada,d); d+=.1; }
+  // Coleta
+  if(L.coleta) { html+=oracao('Coleta',L.coleta,d); d+=.1; }
+  // 1ª Leitura
+  if(L.primeiraLeitura){ html+=card('1ª Leitura',L.primeiraLeitura.referencia,L.primeiraLeitura.texto,d); d+=.1; }
+  // Salmo
+  if(L.salmo){ const t=(L.salmo.refrao?`Refrão: ${L.salmo.refrao}\n\n`:'')+(L.salmo.texto||''); html+=card('Salmo Responsorial',L.salmo.referencia,t,d); d+=.1; }
+  // 2ª Leitura
+  if(L.segundaLeitura){ html+=card('2ª Leitura',L.segundaLeitura.referencia,L.segundaLeitura.texto,d); d+=.1; }
+  // Aclamação
+  if(L.aclamacao&&L.aclamacao.texto){ html+=`<div class="leitura-aclamacao" style="animation-delay:${d}s">${L.aclamacao.texto}</div>`; d+=.1; }
+  // Evangelho
+  if(L.evangelho){ html+=card('Evangelho',L.evangelho.referencia,L.evangelho.texto,d,true); d+=.1; }
+  // Ofertório
+  if(L.ofertorio) { html+=oracao('Oração sobre as Oferendas',L.ofertorio,d); d+=.1; }
+  // Comunhão
+  if(L.comunhao) { html+=oracao('Antífona da Comunhão',L.comunhao,d); d+=.1; }
+  // Pós-Comunhão
+  if(L.posComu||L.posComunhao) { html+=oracao('Oração após a Comunhão',L.posComu||L.posComunhao,d); d+=.1; }
+  // Fallback
+  if(!L.primeiraLeitura&&!L.evangelho){ html+=`<div class="leitura-card"><p class="leitura-label">Leituras</p><p class="leitura-texto">${JSON.stringify(L,null,2)}</p></div>`; }
 
-  html += `
-    <div class="divisor">✦ ✦ ✦</div>
-    <p class="fonte-link">Fonte: <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia Diária (open source)</a></p>`;
+  // Compartilhar
+  html+=`<div class="share-wrap">
+    <p class="share-titulo">Compartilhar</p>
+    <div class="share-botoes">
+      <a class="btn-share whatsapp" id="btn-whatsapp" href="#" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.558 4.126 1.528 5.858L.057 23.868a.5.5 0 00.609.61l6.085-1.46A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.89 0-3.663-.497-5.2-1.371l-.374-.216-3.862.927.961-3.784-.234-.393A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        WhatsApp
+      </a>
+      <button class="btn-share copiar" id="btn-copiar" onclick="copiarLeitura()">📋 Copiar texto</button>
+    </div>
+  </div>`;
 
-  document.getElementById('conteudo').innerHTML = html;
+  html+=`<div class="divisor">✦ ✦ ✦</div>
+    <p class="fonte-link">Fonte: <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia Diária</a></p>`;
+
+  document.getElementById('painel-missa').innerHTML=html;
   atualizarLinkWhatsApp();
 }
 
-async function carregarLiturgia() {
-  mostrarLoading();  try {
-    const r = await fetch(`/api/liturgia?data=${dataISO(dataSel)}`);
-    const dados = await r.json();
-    if (!dados.sucesso) { mostrarErro(dados.erro||'Erro desconhecido.'); return; }
-    renderLiturgia(dados);
-  } catch(e) {
-    mostrarErro('Não foi possível conectar com o servidor. ' + e.message);
+// ══ LAUDES ══
+async function carregarLaudes(){
+  laudesCarregadas=true;
+  document.getElementById('painel-laudes').innerHTML=`<div class="loading"><span class="loading-icone">🌅</span>Buscando as Laudes...</div>`;
+  try{
+    const r=await fetch(`/api/laudes?data=${dataISO(dataSel)}`);
+    const dados=await r.json();
+    if(!dados.sucesso){
+      document.getElementById('painel-laudes').innerHTML=`
+        <div class="erro-box">
+          <h3>⚠️ Laudes não disponíveis</h3>
+          <p>${dados.erro||'Não foi possível carregar as Laudes para esta data.'}</p>
+          <p style="margin-top:.8rem">Acesse diretamente: <a href="https://liturgia.cancaonova.com/pb/laudes/?sDia=${dataSel.getDate()}&sMes=${String(dataSel.getMonth()+1).padStart(2,'0')}&sAno=${dataSel.getFullYear()}" target="_blank">Canção Nova — Laudes</a></p>
+        </div>`;
+      return;
+    }
+    let html=`<div class="tempo-badge">🌅 Laudes — ${dataBR(dataSel)}</div>`;
+    dados.secoes.forEach((s,i)=>{
+      html+=`<div class="laudes-secao" style="animation-delay:${i*.08}s">
+        ${s.titulo?`<p class="laudes-secao-titulo">${s.titulo}</p>`:''}
+        <p class="laudes-texto">${s.texto||''}</p>
+      </div>`;
+    });
+    html+=`<div class="divisor">✦ ✦ ✦</div>
+      <p class="fonte-link">Fonte: <a href="${dados.url}" target="_blank">Canção Nova — Liturgia Diária</a></p>`;
+    document.getElementById('painel-laudes').innerHTML=html;
+  } catch(e){
+    document.getElementById('painel-laudes').innerHTML=`<div class="erro-box"><h3>⚠️ Erro de conexão</h3><p>${e.message}</p></div>`;
   }
 }
 
+// ══ ANOTAÇÕES ══
+function chaveNota(d){ return `nota-${dataISO(d)}`; }
 
-let liturgiaAtual = null; // usado pelo compartilhar
+function renderNotas(){
+  const iso=dataISO(dataSel);
+  document.getElementById('notas-sub').textContent=`Anotações para ${dataBR(dataSel)}.`;
+  const salva=localStorage.getItem(chaveNota(dataSel))||'';
+  document.getElementById('notas-texto').value=salva;
 
-// ══════════════════════════════════════════
-// COMPARTILHAR
-// ══════════════════════════════════════════
-function montarTextoParaCompartilhar() {
-  if (!liturgiaAtual) return '';
-  const L = liturgiaAtual;
-  const data = dataBR(dataSel);
-  let texto = `✝ LITURGIA DO DIA\n${data}\n`;
-  if (L.tipo) texto += `${L.tipo}\n`;
-  texto += '\n';
+  // Histórico
+  const hist=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('nota-')&&k!==chaveNota(dataSel)){
+      const val=localStorage.getItem(k);
+      if(val&&val.trim()) hist.push({ chave:k, texto:val });
+    }
+  }
+  hist.sort((a,b)=>b.chave.localeCompare(a.chave));
 
-  if (L.primeiraLeitura) {
-    texto += `📖 1ª LEITURA (${L.primeiraLeitura.referencia||''})\n${L.primeiraLeitura.texto||''}\n\n`;
+  let htmlH='';
+  if(hist.length>0){
+    htmlH=`<div class="notas-historico">
+      <p class="notas-historico-titulo">Anotações anteriores</p>`;
+    hist.slice(0,10).forEach(h=>{
+      const partes=h.chave.replace('nota-','').split('-');
+      const d=new Date(parseInt(partes[0]),parseInt(partes[1])-1,parseInt(partes[2]));
+      htmlH+=`<div class="nota-item" onclick="irParaData(new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}));mudarTab('notas')">
+        <p class="nota-item-data">${dataBR(d)}</p>
+        <p class="nota-item-preview">${h.texto.substring(0,80)}...</p>
+      </div>`;
+    });
+    htmlH+='</div>';
   }
-  if (L.salmo) {
-    texto += `🎵 SALMO (${L.salmo.referencia||''})\n`;
-    if (L.salmo.refrao) texto += `Refrão: ${L.salmo.refrao}\n`;
-    texto += `${L.salmo.texto||''}\n\n`;
-  }
-  if (L.evangelho) {
-    texto += `✝ EVANGELHO (${L.evangelho.referencia||''})\n${L.evangelho.texto||''}\n\n`;
-  }
-  texto += `🔗 Acesse: ${window.location.origin}`;
-  return texto;
+  document.getElementById('notas-historico').innerHTML=htmlH;
 }
 
-function atualizarLinkWhatsApp() {
-  const texto = montarTextoParaCompartilhar();
-  const encoded = encodeURIComponent(texto);
-  const btn = document.getElementById('btn-whatsapp');
-  if (btn) btn.href = `https://wa.me/?text=${encoded}`;
+function salvarNota(){
+  const texto=document.getElementById('notas-texto').value;
+  if(texto.trim()) localStorage.setItem(chaveNota(dataSel),texto);
+  else localStorage.removeItem(chaveNota(dataSel));
+  const st=document.getElementById('notas-status');
+  st.classList.add('visivel');
+  setTimeout(()=>st.classList.remove('visivel'),2500);
+  renderNotas();
 }
 
-async function copiarLeitura() {
-  const texto = montarTextoParaCompartilhar();
-  const btn = document.getElementById('btn-copiar');
-  try {
-    await navigator.clipboard.writeText(texto);
-    btn.textContent = '✅ Copiado!';
-    btn.classList.add('copiado');
-    setTimeout(() => {
-      btn.textContent = '📋 Copiar texto';
-      btn.classList.remove('copiado');
-    }, 2500);
-  } catch {
-    // fallback para navegadores mais antigos
-    const ta = document.createElement('textarea');
-    ta.value = texto; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent = '✅ Copiado!';
-    setTimeout(() => { btn.textContent = '📋 Copiar texto'; }, 2500);
+// Salva automaticamente enquanto digita (debounce)
+let debounceNota=null;
+document.addEventListener('input', e=>{
+  if(e.target.id==='notas-texto'){
+    clearTimeout(debounceNota);
+    debounceNota=setTimeout(()=>{ localStorage.setItem(chaveNota(dataSel),e.target.value); },1000);
   }
-}
-
-
-
-// ══════════════════════════════════════════
-// PWA
-// ══════════════════════════════════════════
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW:', e));
-  });
-}
-
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('btn-instalar').style.display = 'flex';
 });
-window.addEventListener('appinstalled', () => {
-  document.getElementById('btn-instalar').style.display = 'none';
-  deferredPrompt = null;
-});
-async function instalarApp() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') document.getElementById('btn-instalar').style.display = 'none';
-  deferredPrompt = null;
+
+// ══ COMPARTILHAR ══
+function montarTexto(){
+  if(!liturgiaAtual) return '';
+  const L=liturgiaAtual;
+  let t=`✝ LITURGIA DO DIA\n${dataBR(dataSel)}\n`;
+  if(L.tipo) t+=`${L.tipo}\n`;
+  t+='\n';
+  if(L.primeiraLeitura) t+=`📖 1ª LEITURA (${L.primeiraLeitura.referencia||''})\n${L.primeiraLeitura.texto||''}\n\n`;
+  if(L.salmo){ t+=`🎵 SALMO (${L.salmo.referencia||''})\n`; if(L.salmo.refrao) t+=`Refrão: ${L.salmo.refrao}\n`; t+=`${L.salmo.texto||''}\n\n`; }
+  if(L.evangelho) t+=`✝ EVANGELHO (${L.evangelho.referencia||''})\n${L.evangelho.texto||''}\n\n`;
+  t+=`🔗 ${window.location.origin}`;
+  return t;
+}
+function atualizarLinkWhatsApp(){
+  const btn=document.getElementById('btn-whatsapp');
+  if(btn) btn.href=`https://wa.me/?text=${encodeURIComponent(montarTexto())}`;
+}
+async function copiarLeitura(){
+  const btn=document.getElementById('btn-copiar');
+  try{
+    await navigator.clipboard.writeText(montarTexto());
+    btn.textContent='✅ Copiado!'; btn.classList.add('copiado');
+    setTimeout(()=>{ btn.textContent='📋 Copiar texto'; btn.classList.remove('copiado'); },2500);
+  } catch{
+    const ta=document.createElement('textarea'); ta.value=montarTexto();
+    ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>{ btn.textContent='📋 Copiar texto'; },2500);
+  }
 }
 
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
+// ══ PWA ══
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
+}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('btn-instalar').style.display='flex'; });
+window.addEventListener('appinstalled',()=>{ document.getElementById('btn-instalar').style.display='none'; deferredPrompt=null; });
+async function instalarApp(){ if(!deferredPrompt) return; deferredPrompt.prompt(); const{outcome}=await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('btn-instalar').style.display='none'; deferredPrompt=null; }
+
+// ══ INIT ══
 initTema();
-document.getElementById('data-hoje').textContent = dataBR(dataSel);
+document.getElementById('data-hoje').textContent=dataBR(dataSel);
 syncBotoes();
-carregarLiturgia();
+carregarMissa();
 </script>
 </body>
 </html>

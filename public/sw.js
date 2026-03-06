@@ -43,6 +43,9 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Ignora requisições que não sejam http/https (ex: chrome-extension://)
+  if (!url.protocol.startsWith('http')) return;
+
   // Requisições da API → Network First (dados sempre frescos)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request, CACHE_DADOS));
