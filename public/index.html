@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Liturgia"/>
   <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
+  <link rel="icon" href="/favicon.ico"/>
   <meta name="description" content="A Palavra de Deus para cada dia — leituras da Santa Missa e Laudes."/>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
   <style>
@@ -430,8 +431,24 @@ function renderMissa(dados){
   if(L.comunhao) { html+=oracao('Antífona da Comunhão',L.comunhao,d); d+=.1; }
   // Pós-Comunhão
   if(L.posComu||L.posComunhao) { html+=oracao('Oração após a Comunhão',L.posComu||L.posComunhao,d); d+=.1; }
-  // Fallback
-  if(!L.primeiraLeitura&&!L.evangelho){ html+=`<div class="leitura-card"><p class="leitura-label">Leituras</p><p class="leitura-texto">${JSON.stringify(L,null,2)}</p></div>`; }
+  // Fallback: tenta exibir campos genéricos da v2
+  if(!L.primeiraLeitura&&!L.evangelho){
+    // Tenta campos alternativos da v2
+    const leituras = L.leituras || [];
+    if(leituras.length > 0){
+      leituras.forEach((l,i)=>{
+        const tipo = l.tipo || `Leitura ${i+1}`;
+        const isEv = tipo.toLowerCase().includes('evangelho');
+        html+=card(tipo, l.referencia, l.texto||'', d, isEv); d+=.1;
+      });
+    } else {
+      // último fallback: mostra campos de texto encontrados
+      const campos = ['coleta','ofertorio','posComunhao','antifonaEntrada'];
+      let achou = false;
+      campos.forEach(k=>{ if(L[k]){ html+=oracao(k,L[k],d); d+=.1; achou=true; }});
+      if(!achou) html+=`<div class="leitura-card"><p class="leitura-label">Dados recebidos</p><p class="leitura-texto">${JSON.stringify(L,null,2)}</p></div>`;
+    }
+  }
 
   // Compartilhar
   html+=`<div class="share-wrap">
@@ -459,13 +476,27 @@ async function carregarLaudes(){
   try{
     const r=await fetch(`/api/laudes?data=${dataISO(dataSel)}`);
     const dados=await r.json();
-    if(!dados.sucesso){
+    // Laudes são fornecidas por links externos
+    if(dados.externo || !dados.sucesso){
+      const urls = dados.urls || {};
+      const d1 = dataSel.getDate();
+      const m1 = String(dataSel.getMonth()+1).padStart(2,'0');
+      const a1 = dataSel.getFullYear();
       document.getElementById('painel-laudes').innerHTML=`
-        <div class="erro-box">
-          <h3>⚠️ Laudes não disponíveis</h3>
-          <p>${dados.erro||'Não foi possível carregar as Laudes para esta data.'}</p>
-          <p style="margin-top:.8rem">Acesse diretamente: <a href="https://liturgia.cancaonova.com/pb/laudes/?sDia=${dataSel.getDate()}&sMes=${String(dataSel.getMonth()+1).padStart(2,'0')}&sAno=${dataSel.getFullYear()}" target="_blank">Canção Nova — Laudes</a></p>
-        </div>`;
+        <div class="tempo-badge">🌅 Laudes — ${dataBR(dataSel)}</div>
+        <div class="leitura-card">
+          <p class="leitura-label">Liturgia das Horas</p>
+          <p class="leitura-referencia">Laudes do Dia</p>
+          <p class="leitura-texto" style="margin-bottom:1.5rem">As Laudes (oração da manhã da Liturgia das Horas) estão disponíveis nas fontes abaixo. Clique para abrir:</p>
+          <div style="display:flex;flex-direction:column;gap:.8rem">
+            <a href="${urls.cancaoNova||'https://liturgia.cancaonova.com/pb/laudes/?sDia='+d1+'&sMes='+m1+'&sAno='+a1}" target="_blank"
+               style="display:inline-flex;align-items:center;gap:.6rem;background:var(--vinho);color:var(--ouro-claro);font-family:'Lato',sans-serif;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;padding:.7rem 1.2rem;border-radius:2px;text-decoration:none;width:fit-content">
+              🌅 Abrir na Canção Nova
+            </a>
+          </div>
+        </div>
+        <div class="divisor">✦ ✦ ✦</div>
+        <p class="fonte-link">Fonte: <a href="https://liturgia.cancaonova.com" target="_blank">liturgia.cancaonova.com</a></p>`;
       return;
     }
     let html=`<div class="tempo-badge">🌅 Laudes — ${dataBR(dataSel)}</div>`;
