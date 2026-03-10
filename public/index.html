@@ -217,6 +217,7 @@
 <div class="tabs-bar">
   <button class="tab-btn ativo" onclick="mudarTab('missa')">✝ Santa Missa</button>
   <button class="tab-btn"       onclick="mudarTab('laudes')">🌅 Laudes</button>
+  <button class="tab-btn"       onclick="mudarTab('jose')">🌿 São José</button>
   <button class="tab-btn"       onclick="mudarTab('notas')">📝 Anotações</button>
 </div>
 
@@ -229,6 +230,12 @@
   <!-- PAINEL LAUDES -->
   <div class="painel" id="painel-laudes">
     <div class="loading"><span class="loading-icone">🌅</span>Buscando as Laudes...</div>
+  </div>
+
+
+  <!-- PAINEL NOVENA SÃO JOSÉ -->
+  <div class="painel" id="painel-jose">
+    <div id="jose-conteudo"></div>
   </div>
 
   <!-- PAINEL ANOTAÇÕES -->
@@ -317,12 +324,13 @@ function initTema(){
 function mudarTab(tab){
   tabAtiva = tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('ativo', ['missa','laudes','notas'][i]===tab);
+    b.classList.toggle('ativo', ['missa','laudes','jose','notas'][i]===tab);
   });
   document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
   document.getElementById('painel-'+tab).classList.add('ativo');
 
   if(tab==='laudes' && !laudesCarregadas) carregarLaudes();
+  if(tab==='jose') renderNovena();
   if(tab==='notas') renderNotas();
 }
 
@@ -600,6 +608,112 @@ async function copiarLeitura(){
     btn.textContent='✅ Copiado!';
     setTimeout(()=>{ btn.textContent='📋 Copiar texto'; },2500);
   }
+}
+
+
+// ══════════════════════════════════════════
+// NOVENA DE SÃO JOSÉ
+// ══════════════════════════════════════════
+const ORACAO_FIXA = `Amado São José, vós que fostes instrumento da Providência Divina na Família de Nazaré, na Igreja e para com vossos irmãos, fixai nossos olhos nas coisas que não passam e dai-nos a graça de ordenar nossas vidas para os tesouros do céu. Amém!`;
+
+const ORACAO_FINAL = `Glorioso São José, que fostes modelo de vivência da pobreza, da sobriedade, de instrumento da Divina Providência; vós que não detivestes para vós mesmo nenhum bem material ou espiritual, destinando-os sempre às necessidades de Jesus, de Maria e dos vossos irmãos; vós que, por graça divina, vistes restaurada em vós a vocação original do homem à caridade, trabalho, partilha e comunhão; vós que, inspirado pelo Espírito Santo, acolhestes a nova economia do Reino do vosso Filho Jesus, intercedei para que acolhamos o mesmo convite que vos fez o Pai de ser instrumentos de Sua Paz, de Sua Providência, de Sua Caridade, de Sua Pobreza para o homem de hoje. Amém`;
+
+const NOVENA_DIAS = [
+  {
+    num: 1,
+    titulo: 'São José, o grande instrumento da Providência Divina na Família de Nazaré',
+    invocacao: `São José, servo da Caridade, que acolhestes com fé e coragem confiante a missão de ser instrumento da Divina Providência para com Jesus e Maria, aumentai em nós a fé, a coragem e a confiança em Deus para, também nós, sermos instrumentos da Providência, como é da vontade de Deus desde a criação do mundo.`
+  },
+  {
+    num: 2,
+    titulo: 'São José, o grande instrumento da Providência Divina na vida da Igreja',
+    invocacao: `São José, servo fiel e prudente, que sois Patrono da Igreja Católica no mundo inteiro, protegendo e sendo instrumento da Divina Providência para Jesus, seu Divino Fundador e para Maria, seu Modelo mais perfeito, dai-nos a graça de, também nós, apesar do nosso pecado e indignidade, termos o privilégio de ser instrumentos da Providência de Deus na Igreja do vosso Filho Jesus.`
+  },
+  {
+    num: 3,
+    titulo: 'São José, Patrono de toda a Obra Shalom',
+    invocacao: `São José, humílimo servo do Senhor, que sois instrumento da Providência Divina para a Obra Shalom, sede nossa inspiração e modelo para que, esquecidos de nós mesmos, sirvamos a Deus e sejamos mediadores de Sua Providência para a evangelização através da Obra que nos foi confiada.`
+  },
+  {
+    num: 4,
+    titulo: 'São José, auxílio e socorro na implantação da Paz no mundo',
+    invocacao: `São José, servo dulcíssimo, que educaste com exemplo, doçura e firmeza o Filho de Deus a vós confiado, ensinando-lhe o valor do trabalho como meio de partilha e vendo-o crescer em graça e sabedoria para a implantação de Sua Paz no mundo, auxilia-nos com os meios necessários para a educação dos nossos filhos e a formação dos que evangelizamos para que sejam, também eles, alegres testemunhas do Ressuscitado que passou pela cruz.`
+  },
+  {
+    num: 5,
+    titulo: 'São José, construtor dos espaços sagrados',
+    invocacao: `São José, servo e trabalhador diligente, que construístes para Jesus e Maria o lar em que reinaram com perfeição a caridade e a alegria, ajudai-nos a construir em nossos lares e na Obra espaços sagrados dignos da presença viva do vosso amado Jesus.`
+  },
+  {
+    num: 6,
+    titulo: 'São José, mantenedor do culto divino',
+    invocacao: `São José, servo piedoso, que tivestes para com Jesus e Maria permanente postura de oração, veneração, proteção e cuidado, servindo juntamente com Maria Àquele que adoráveis, fazei de nós instrumentos da Divina Providência para que nunca se extinga ou se empobreça em beleza, brilho, dignidade e piedade o culto divino em meio a nós.`
+  },
+  {
+    num: 7,
+    titulo: 'São José, modelo de abandono nas mãos de Deus',
+    invocacao: `São José, servo confiante, que não temestes tomar sob vossa proteção e sustento a Maria e Jesus e, abandonado às mãos do Deus das Providências os servistes durante toda vossa vida sem reter para vós nada do fruto do vosso trabalho, ensinai-nos a acolher a graça do completo abandono nas mãos do Pai que cuida de nós muito melhor do que nós mesmos.`
+  },
+  {
+    num: 8,
+    titulo: 'São José, educador na vivência da sobriedade',
+    invocacao: `São José, servo sóbrio e justo, que nunca considerastes como vosso o que vos poderia ser supérfluo, mas, longe disso, soubestes partilhar além do supérfluo, aquilo que Jesus, Maria e vossos irmãos necessitavam, ensinai-nos que o supérfluo não nos pertence, assim como, por direito de caridade, deixa de nos pertencer aquilo de que nosso irmão precisa.`
+  },
+  {
+    num: 9,
+    titulo: 'São José, ícone do espírito de pobreza',
+    invocacao: `São José, servo pobre do Senhor, que entendestes ser a partilha original a mesma partilha da Trindade para conosco, e que, em Jesus Cristo, vos deixastes moldar pelo espírito de partilha e comunhão que antecederam o pecado original, concedei-nos, pelo poder do vosso Filho, a graça de honrar nosso Batismo com a conversão à partilha e comunhão das origens, agora elevada a caridade pelos méritos de Cristo.`
+  }
+];
+
+let novenasDiaAtivo = 1;
+
+function renderNovena(dia) {
+  if (dia !== undefined) novenasDiaAtivo = dia;
+  const d = NOVENA_DIAS[novenasDiaAtivo - 1];
+
+  // Botões dos dias
+  const botoesHtml = NOVENA_DIAS.map(item =>
+    `<button class="dia-btn${item.num === novenasDiaAtivo ? ' ativo' : ''}" onclick="renderNovena(${item.num})">${item.num}º dia</button>`
+  ).join('');
+
+  const html = `
+    <div class="novena-header">
+      <p class="novena-subtitulo">Comunidade Shalom · Ano de São José</p>
+      <span class="novena-cruz">✦ ✦ ✦</span>
+      <h2 class="novena-titulo">Novena de São José</h2>
+    </div>
+
+    <div class="dias-nav">${botoesHtml}</div>
+
+    <div style="animation:fadeUp .4s ease both">
+      <div class="novena-dia-titulo-wrap">
+        <span class="novena-dia-badge">${d.num}º dia</span>
+        <span class="novena-dia-titulo">${d.titulo}</span>
+      </div>
+
+      <p class="novena-invocacao">${d.invocacao}</p>
+
+      <p class="novena-section-label">Oração</p>
+      <div class="novena-oracao-box">
+        ${ORACAO_FIXA}
+      </div>
+      <p class="novena-terco">Em seguida, reza-se um Pai-nosso, uma Ave-Maria, um Glória.</p>
+
+      <p class="novena-section-label">Oração Final</p>
+      <div class="novena-final-box">${ORACAO_FINAL}</div>
+
+      <div class="novena-nav-bottom">
+        <button class="novena-nav-btn" onclick="renderNovena(${novenasDiaAtivo - 1})" ${novenasDiaAtivo <= 1 ? 'disabled' : ''}>← Dia anterior</button>
+        <button class="novena-nav-btn" onclick="renderNovena(${novenasDiaAtivo + 1})" ${novenasDiaAtivo >= 9 ? 'disabled' : ''}>Próximo dia →</button>
+      </div>
+
+      <div class="divisor">✦ ✦ ✦</div>
+      <p class="fonte-link">Novena da <a href="https://comshalom.org" target="_blank">Comunidade Shalom</a> · Ano de São José</p>
+    </div>`;
+
+  document.getElementById('jose-conteudo').innerHTML = html;
+  document.getElementById('painel-jose').scrollTop = 0;
 }
 
 // ══ PWA ══
