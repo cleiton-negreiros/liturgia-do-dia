@@ -180,6 +180,25 @@
     footer{text-align:center;padding:2rem;border-top:1px solid var(--linha);font-family:'Lato',sans-serif;font-size:.75rem;color:var(--cinza);letter-spacing:.08em;transition:border-color .3s;}
     footer a{color:var(--vinho);text-decoration:none;}
 
+
+    /* ══ LANDSCAPE / RESPONSIVO ══ */
+    @media (max-width: 768px) {
+      .tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab-btn  { white-space: nowrap; flex: none; padding: .7rem .8rem; font-size:.7rem; }
+    }
+    @media (orientation: landscape) and (max-height: 520px) {
+      header { padding: .8rem 1.5rem .7rem; }
+      .site-title { font-size: 1.3rem; }
+      .site-subtitle, .ornamento { display: none; }
+      .data-bar { padding: .4rem 1rem; }
+      main { padding: 1rem 1rem 2rem; }
+      .tab-btn { padding: .5rem .6rem; font-size: .68rem; }
+    }
+    @media (max-width: 400px) {
+      .nav-datas button { padding: .25rem .5rem; font-size: .7rem; }
+      .leitura-texto { font-size: 1rem; }
+    }
+
     @media(max-width:520px){
       .data-bar{flex-direction:column;align-items:flex-start;}
       main{padding:1.5rem 1rem 3rem;}
@@ -217,6 +236,7 @@
 <div class="tabs-bar">
   <button class="tab-btn ativo" onclick="mudarTab('missa')">✝ Santa Missa</button>
   <button class="tab-btn"       onclick="mudarTab('laudes')">🌅 Laudes</button>
+  <button class="tab-btn"       onclick="mudarTab('biblia')">📖 Bíblia</button>
   <button class="tab-btn"       onclick="mudarTab('jose')">🌿 São José</button>
   <button class="tab-btn"       onclick="mudarTab('notas')">📝 Anotações</button>
 </div>
@@ -232,6 +252,33 @@
     <div class="loading"><span class="loading-icone">🌅</span>Buscando as Laudes...</div>
   </div>
 
+
+
+  <!-- PAINEL BÍBLIA -->
+  <div class="painel" id="painel-biblia">
+    <div class="biblia-header">
+      <h2 class="biblia-titulo">📖 Bíblia Sagrada</h2>
+      <div class="bandeiras">
+        <button class="bandeira-btn ativo" onclick="trocarIdioma('pt')" title="Português" id="flag-pt">🇧🇷</button>
+        <button class="bandeira-btn" onclick="trocarIdioma('es')" title="Español"   id="flag-es">🇪🇸</button>
+        <button class="bandeira-btn" onclick="trocarIdioma('it')" title="Italiano"  id="flag-it">🇮🇹</button>
+        <button class="bandeira-btn" onclick="trocarIdioma('en')" title="English"   id="flag-en">🇬🇧</button>
+      </div>
+    </div>
+    <div class="biblia-nav">
+      <select class="biblia-select" id="sel-livro" onchange="trocarLivro()">
+        <option>Carregando...</option>
+      </select>
+      <div class="cap-nav">
+        <button onclick="trocarCap(-1)" id="btn-cap-prev">‹</button>
+        <span class="cap-label" id="cap-label">Cap. 1</span>
+        <button onclick="trocarCap(1)"  id="btn-cap-next">›</button>
+      </div>
+    </div>
+    <div id="biblia-conteudo">
+      <div class="biblia-loading">✝ Carregando...</div>
+    </div>
+  </div>
 
   <!-- PAINEL NOVENA SÃO JOSÉ -->
   <div class="painel" id="painel-jose">
@@ -324,12 +371,13 @@ function initTema(){
 function mudarTab(tab){
   tabAtiva = tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('ativo', ['missa','laudes','jose','notas'][i]===tab);
+    b.classList.toggle('ativo', ['missa','laudes','biblia','jose','notas'][i]===tab);
   });
   document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
   document.getElementById('painel-'+tab).classList.add('ativo');
 
   if(tab==='laudes' && !laudesCarregadas) carregarLaudes();
+  if(tab==='biblia' && !bibliaInit) initBiblia();
   if(tab==='jose') renderNovena();
   if(tab==='notas') renderNotas();
 }
@@ -505,9 +553,9 @@ async function carregarLaudes(){
     }
 
     dados.secoes.forEach((s,i)=>{
-      html+=`<div class="laudes-secao" style="animation-delay:${i*.08}s">
-        ${s.titulo ? `<p class="laudes-secao-titulo">${s.titulo}</p>` : ''}
-        <p class="laudes-texto">${(s.texto||'').replace(/\n/g,'<br>')}</p>
+      html+=`<div class="leitura-card laudes-secao" style="animation-delay:${i*.08}s">
+        ${s.titulo ? `<p class="leitura-label">${s.titulo}</p>` : ''}
+        <p class="leitura-texto">${(s.texto||'').replace(/\n/g,'<br>')}</p>
       </div>`;
     });
 
@@ -690,16 +738,21 @@ function renderNovena(dia) {
         <span class="novena-dia-titulo">${d.titulo}</span>
       </div>
 
-      <p class="novena-invocacao">${d.invocacao}</p>
-
-      <p class="novena-section-label">Oração</p>
-      <div class="novena-oracao-box">
-        ${ORACAO_FIXA}
+      <div class="leitura-card" style="animation-delay:.1s">
+        <p class="leitura-texto">${d.invocacao}</p>
       </div>
-      <p class="novena-terco">Em seguida, reza-se um Pai-nosso, uma Ave-Maria, um Glória.</p>
 
-      <p class="novena-section-label">Oração Final</p>
-      <div class="novena-final-box">${ORACAO_FINAL}</div>
+      <div class="oracao-card" style="animation-delay:.2s">
+        <p class="leitura-label">Oração</p>
+        <p class="leitura-texto">${ORACAO_FIXA}</p>
+        <p style="font-family:'Lato',sans-serif;font-size:.8rem;color:var(--cinza);margin-top:.7rem;font-style:normal">
+          Em seguida, reza-se um Pai-nosso, uma Ave-Maria, um Glória.
+        </p>
+      </div>
+      <div class="oracao-card" style="animation-delay:.3s">
+        <p class="leitura-label">Oração Final</p>
+        <p class="leitura-texto">${ORACAO_FINAL}</p>
+      </div>
 
       <div class="novena-nav-bottom">
         <button class="novena-nav-btn" onclick="renderNovena(${novenasDiaAtivo - 1})" ${novenasDiaAtivo <= 1 ? 'disabled' : ''}>← Dia anterior</button>
@@ -712,6 +765,242 @@ function renderNovena(dia) {
 
   document.getElementById('jose-conteudo').innerHTML = html;
   document.getElementById('painel-jose').scrollTop = 0;
+}
+
+
+// ══════════════════════════════════════════
+// BÍBLIA SAGRADA
+// ══════════════════════════════════════════
+const BIBLE_API   = 'https://bible.helloao.org/api';
+const BIBLE_LANGS = { pt:'por', es:'spa', it:'ita', en:'eng' };
+
+// Traduções preferidas por idioma (fallback automático)
+const BIBLE_PREFERRED = { pt:['NTLH','PORALMEIDA','PORACF'], es:['SBLG','RVR09','SPARVR'], it:['ITACEI','ITAREV','ITADIOD'], en:['ENGWEBP','BSB'] };
+
+// Canon Católico — 73 livros com IDs e nomes por idioma
+const CANON = [
+  // ── ANTIGO TESTAMENTO ──
+  {id:'GEN', pt:'Gênesis',         es:'Génesis',      it:'Genesi',       en:'Genesis',       cap:50, grupo:'Pentateuco'},
+  {id:'EXO', pt:'Êxodo',           es:'Éxodo',         it:'Esodo',        en:'Exodus',        cap:40, grupo:'Pentateuco'},
+  {id:'LEV', pt:'Levítico',        es:'Levítico',      it:'Levitico',     en:'Leviticus',     cap:27, grupo:'Pentateuco'},
+  {id:'NUM', pt:'Números',         es:'Números',       it:'Numeri',       en:'Numbers',       cap:36, grupo:'Pentateuco'},
+  {id:'DEU', pt:'Deuteronômio',    es:'Deuteronomio',  it:'Deuteronomio', en:'Deuteronomy',   cap:34, grupo:'Pentateuco'},
+  {id:'JOS', pt:'Josué',           es:'Josué',         it:'Giosuè',       en:'Joshua',        cap:24, grupo:'Históricos'},
+  {id:'JDG', pt:'Juízes',          es:'Jueces',        it:'Giudici',      en:'Judges',        cap:21, grupo:'Históricos'},
+  {id:'RUT', pt:'Rute',            es:'Rut',           it:'Rut',          en:'Ruth',          cap:4,  grupo:'Históricos'},
+  {id:'1SA', pt:'1 Samuel',        es:'1 Samuel',      it:'1 Samuele',    en:'1 Samuel',      cap:31, grupo:'Históricos'},
+  {id:'2SA', pt:'2 Samuel',        es:'2 Samuel',      it:'2 Samuele',    en:'2 Samuel',      cap:24, grupo:'Históricos'},
+  {id:'1KI', pt:'1 Reis',          es:'1 Reyes',       it:'1 Re',         en:'1 Kings',       cap:22, grupo:'Históricos'},
+  {id:'2KI', pt:'2 Reis',          es:'2 Reyes',       it:'2 Re',         en:'2 Kings',       cap:25, grupo:'Históricos'},
+  {id:'1CH', pt:'1 Crônicas',      es:'1 Crónicas',    it:'1 Cronache',   en:'1 Chronicles',  cap:29, grupo:'Históricos'},
+  {id:'2CH', pt:'2 Crônicas',      es:'2 Crónicas',    it:'2 Cronache',   en:'2 Chronicles',  cap:36, grupo:'Históricos'},
+  {id:'EZR', pt:'Esdras',          es:'Esdras',        it:'Esdra',        en:'Ezra',          cap:10, grupo:'Históricos'},
+  {id:'NEH', pt:'Neemias',         es:'Nehemías',      it:'Neemia',       en:'Nehemiah',      cap:13, grupo:'Históricos'},
+  {id:'TOB', pt:'Tobias',          es:'Tobías',        it:'Tobia',        en:'Tobit',         cap:14, grupo:'Deuterocanônicos', dc:true},
+  {id:'JDT', pt:'Judite',          es:'Judit',         it:'Giuditta',     en:'Judith',        cap:16, grupo:'Deuterocanônicos', dc:true},
+  {id:'EST', pt:'Ester',           es:'Ester',         it:'Ester',        en:'Esther',        cap:10, grupo:'Históricos'},
+  {id:'1MA', pt:'1 Macabeus',      es:'1 Macabeos',    it:'1 Maccabei',   en:'1 Maccabees',   cap:16, grupo:'Deuterocanônicos', dc:true},
+  {id:'2MA', pt:'2 Macabeus',      es:'2 Macabeos',    it:'2 Maccabei',   en:'2 Maccabees',   cap:15, grupo:'Deuterocanônicos', dc:true},
+  {id:'JOB', pt:'Jó',              es:'Job',           it:'Giobbe',       en:'Job',           cap:42, grupo:'Poéticos'},
+  {id:'PSA', pt:'Salmos',          es:'Salmos',        it:'Salmi',        en:'Psalms',        cap:150,grupo:'Poéticos'},
+  {id:'PRO', pt:'Provérbios',      es:'Proverbios',    it:'Proverbi',     en:'Proverbs',      cap:31, grupo:'Poéticos'},
+  {id:'ECC', pt:'Eclesiastes',     es:'Eclesiastés',   it:'Qoèlet',       en:'Ecclesiastes',  cap:12, grupo:'Poéticos'},
+  {id:'SNG', pt:'Cântico dos Cânticos', es:'Cantar de los Cantares', it:'Cantico dei Cantici', en:'Song of Songs', cap:8, grupo:'Poéticos'},
+  {id:'WIS', pt:'Sabedoria',       es:'Sabiduría',     it:'Sapienza',     en:'Wisdom',        cap:19, grupo:'Deuterocanônicos', dc:true},
+  {id:'SIR', pt:'Eclesiástico',    es:'Eclesiástico',  it:'Siracide',     en:'Sirach',        cap:51, grupo:'Deuterocanônicos', dc:true},
+  {id:'ISA', pt:'Isaías',          es:'Isaías',        it:'Isaia',        en:'Isaiah',        cap:66, grupo:'Proféticos'},
+  {id:'JER', pt:'Jeremias',        es:'Jeremías',      it:'Geremia',      en:'Jeremiah',      cap:52, grupo:'Proféticos'},
+  {id:'LAM', pt:'Lamentações',     es:'Lamentaciones', it:'Lamentazioni', en:'Lamentations',  cap:5,  grupo:'Proféticos'},
+  {id:'BAR', pt:'Baruc',           es:'Baruc',         it:'Baruc',        en:'Baruch',        cap:6,  grupo:'Deuterocanônicos', dc:true},
+  {id:'EZK', pt:'Ezequiel',        es:'Ezequiel',      it:'Ezechiele',    en:'Ezekiel',       cap:48, grupo:'Proféticos'},
+  {id:'DAN', pt:'Daniel',          es:'Daniel',        it:'Daniele',      en:'Daniel',        cap:14, grupo:'Proféticos'},
+  {id:'HOS', pt:'Oseias',          es:'Oseas',         it:'Osea',         en:'Hosea',         cap:14, grupo:'Proféticos'},
+  {id:'JOL', pt:'Joel',            es:'Joel',          it:'Gioele',       en:'Joel',          cap:3,  grupo:'Proféticos'},
+  {id:'AMO', pt:'Amós',            es:'Amós',          it:'Amos',         en:'Amos',          cap:9,  grupo:'Proféticos'},
+  {id:'OBA', pt:'Abdias',          es:'Abdías',        it:'Abdia',        en:'Obadiah',       cap:1,  grupo:'Proféticos'},
+  {id:'JON', pt:'Jonas',           es:'Jonás',         it:'Giona',        en:'Jonah',         cap:4,  grupo:'Proféticos'},
+  {id:'MIC', pt:'Miquéias',        es:'Miqueas',       it:'Michea',       en:'Micah',         cap:7,  grupo:'Proféticos'},
+  {id:'NAM', pt:'Naum',            es:'Nahúm',         it:'Naum',         en:'Nahum',         cap:3,  grupo:'Proféticos'},
+  {id:'HAB', pt:'Habacuc',         es:'Habacuc',       it:'Abacuc',       en:'Habakkuk',      cap:3,  grupo:'Proféticos'},
+  {id:'ZEP', pt:'Sofonias',        es:'Sofonías',      it:'Sofonia',      en:'Zephaniah',     cap:3,  grupo:'Proféticos'},
+  {id:'HAG', pt:'Ageu',            es:'Hageo',         it:'Aggeo',        en:'Haggai',        cap:2,  grupo:'Proféticos'},
+  {id:'ZEC', pt:'Zacarias',        es:'Zacarías',      it:'Zaccaria',     en:'Zechariah',     cap:14, grupo:'Proféticos'},
+  {id:'MAL', pt:'Malaquias',       es:'Malaquías',     it:'Malachia',     en:'Malachi',       cap:4,  grupo:'Proféticos'},
+  // ── NOVO TESTAMENTO ──
+  {id:'MAT', pt:'Mateus',          es:'Mateo',         it:'Matteo',       en:'Matthew',       cap:28, grupo:'Evangelhos'},
+  {id:'MRK', pt:'Marcos',          es:'Marcos',        it:'Marco',        en:'Mark',          cap:16, grupo:'Evangelhos'},
+  {id:'LUK', pt:'Lucas',           es:'Lucas',         it:'Luca',         en:'Luke',          cap:24, grupo:'Evangelhos'},
+  {id:'JHN', pt:'João',            es:'Juan',          it:'Giovanni',     en:'John',          cap:21, grupo:'Evangelhos'},
+  {id:'ACT', pt:'Atos',            es:'Hechos',        it:'Atti',         en:'Acts',          cap:28, grupo:'Novo Testamento'},
+  {id:'ROM', pt:'Romanos',         es:'Romanos',       it:'Romani',       en:'Romans',        cap:16, grupo:'Cartas'},
+  {id:'1CO', pt:'1 Coríntios',     es:'1 Corintios',   it:'1 Corinzi',    en:'1 Corinthians', cap:16, grupo:'Cartas'},
+  {id:'2CO', pt:'2 Coríntios',     es:'2 Corintios',   it:'2 Corinzi',    en:'2 Corinthians', cap:13, grupo:'Cartas'},
+  {id:'GAL', pt:'Gálatas',         es:'Gálatas',       it:'Galati',       en:'Galatians',     cap:6,  grupo:'Cartas'},
+  {id:'EPH', pt:'Efésios',         es:'Efesios',       it:'Efesini',      en:'Ephesians',     cap:6,  grupo:'Cartas'},
+  {id:'PHP', pt:'Filipenses',      es:'Filipenses',    it:'Filippesi',    en:'Philippians',   cap:4,  grupo:'Cartas'},
+  {id:'COL', pt:'Colossenses',     es:'Colosenses',    it:'Colossesi',    en:'Colossians',    cap:4,  grupo:'Cartas'},
+  {id:'1TH', pt:'1 Tessalonicenses', es:'1 Tesalonicenses', it:'1 Tessalonicesi', en:'1 Thessalonians', cap:5, grupo:'Cartas'},
+  {id:'2TH', pt:'2 Tessalonicenses', es:'2 Tesalonicenses', it:'2 Tessalonicesi', en:'2 Thessalonians', cap:3, grupo:'Cartas'},
+  {id:'1TI', pt:'1 Timóteo',       es:'1 Timoteo',     it:'1 Timoteo',    en:'1 Timothy',     cap:6,  grupo:'Cartas'},
+  {id:'2TI', pt:'2 Timóteo',       es:'2 Timoteo',     it:'2 Timoteo',    en:'2 Timothy',     cap:4,  grupo:'Cartas'},
+  {id:'TIT', pt:'Tito',            es:'Tito',          it:'Tito',         en:'Titus',         cap:3,  grupo:'Cartas'},
+  {id:'PHM', pt:'Filemon',         es:'Filemón',       it:'Filemone',     en:'Philemon',      cap:1,  grupo:'Cartas'},
+  {id:'HEB', pt:'Hebreus',         es:'Hebreos',       it:'Ebrei',        en:'Hebrews',       cap:13, grupo:'Cartas'},
+  {id:'JAS', pt:'Tiago',           es:'Santiago',      it:'Giacomo',      en:'James',         cap:5,  grupo:'Cartas'},
+  {id:'1PE', pt:'1 Pedro',         es:'1 Pedro',       it:'1 Pietro',     en:'1 Peter',       cap:5,  grupo:'Cartas'},
+  {id:'2PE', pt:'2 Pedro',         es:'2 Pedro',       it:'2 Pietro',     en:'2 Peter',       cap:3,  grupo:'Cartas'},
+  {id:'1JN', pt:'1 João',          es:'1 Juan',        it:'1 Giovanni',   en:'1 Giovanni',    cap:5,  grupo:'Cartas'},
+  {id:'2JN', pt:'2 João',          es:'2 Juan',        it:'2 Giovanni',   en:'2 John',        cap:1,  grupo:'Cartas'},
+  {id:'3JN', pt:'3 João',          es:'3 Juan',        it:'3 Giovanni',   en:'3 John',        cap:1,  grupo:'Cartas'},
+  {id:'JUD', pt:'Judas',           es:'Judas',         it:'Giuda',        en:'Jude',          cap:1,  grupo:'Cartas'},
+  {id:'REV', pt:'Apocalipse',      es:'Apocalipsis',   it:'Apocalisse',   en:'Revelation',    cap:22, grupo:'Apocalipse'},
+];
+
+let bibliaInit   = false;
+let bibliaLang   = 'pt';
+let bibliaTransl = {};   // { pt: 'NTLH', es: 'RVR09', ... }
+let bibliaLivro  = 0;    // índice no CANON
+let bibliaCap    = 1;
+
+async function initBiblia() {
+  if (bibliaInit) return;
+  bibliaInit = true;
+  renderSelectLivro();
+  await descobrirTraducoes();
+  await carregarCapitulo();
+}
+
+function renderSelectLivro() {
+  const sel = document.getElementById('sel-livro');
+  const grupos = [...new Set(CANON.map(l=>l.grupo))];
+  sel.innerHTML = grupos.map(g => {
+    const livros = CANON.filter(l=>l.grupo===g);
+    return `<optgroup label="${g}">${livros.map(l=>{
+      const idx = CANON.indexOf(l);
+      const dc  = l.dc ? ' *' : '';
+      return `<option value="${idx}">${l[bibliaLang]}${dc}</option>`;
+    }).join('')}</optgroup>`;
+  }).join('');
+  sel.value = bibliaLivro;
+}
+
+async function descobrirTraducoes() {
+  const PREF = BIBLE_PREFERRED;
+  // Usa preferências pré-definidas + fallback via API
+  try {
+    const r = await fetch(`${BIBLE_API}/available_translations.json`);
+    const { translations } = await r.json();
+    ['pt','es','it','en'].forEach(lang => {
+      const langCode = BIBLE_LANGS[lang];
+      const available = translations.filter(t => t.language.startsWith(langCode));
+      // Prefere traduções com mais livros (canon completo)
+      available.sort((a,b) => b.numberOfBooks - a.numberOfBooks);
+      const pref = PREF[lang];
+      const match = pref.map(p => available.find(t => t.id === p)).find(Boolean)
+                 || available[0];
+      if (match) bibliaTransl[lang] = match;
+    });
+  } catch(e) {
+    // Fallback: usa IDs hardcoded
+    bibliaTransl = {
+      pt: { id:'NTLH',     shortName:'NTLH',    name:'Nova Tradução em Linguagem de Hoje',  englishName:'NTLH' },
+      es: { id:'RVR09',    shortName:'RVR09',   name:'Reina-Valera 1909',                   englishName:'RVR09' },
+      it: { id:'ITADIOD',  shortName:'DIOD',    name:'Diodati',                             englishName:'Diodati' },
+      en: { id:'ENGWEBP',  shortName:'WEB',     name:'World English Bible',                 englishName:'World English Bible' },
+    };
+  }
+}
+
+async function carregarCapitulo() {
+  const livro = CANON[bibliaLivro];
+  const tObj  = bibliaTransl[bibliaLang];
+  const tid   = tObj ? tObj.id : (bibliaLang === 'en' ? 'ENGWEBP' : 'NTLH');
+  const box   = document.getElementById('biblia-conteudo');
+
+  // Atualiza UI nav
+  document.getElementById('cap-label').textContent = `Cap. ${bibliaCap}`;
+  document.getElementById('btn-cap-prev').disabled = (bibliaCap <= 1);
+  document.getElementById('btn-cap-next').disabled = (bibliaCap >= livro.cap);
+  document.getElementById('sel-livro').value = bibliaLivro;
+
+  box.innerHTML = `<div class="biblia-loading">✝ Carregando ${livro[bibliaLang]} ${bibliaCap}...</div>`;
+
+  try {
+    const url = `${BIBLE_API}/${tid}/${livro.id}/${bibliaCap}.json`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`Tradução "${tid}" não disponível para este livro (${r.status})`);
+    const data = await r.json();
+    const verses = data.verses || data.chapter?.verses || [];
+
+    let html = `<div class="leitura-card">
+      <p class="leitura-label">${livro.grupo}${livro.dc ? ' · Deuterocanônico' : ''}</p>
+      <p class="leitura-referencia">${livro[bibliaLang]} ${bibliaCap}</p>
+      <div class="biblia-versiculos">`;
+
+    verses.forEach(v => {
+      const num   = v.verse || v.verseNumber || v.number || '';
+      const texto = v.text  || v.content     || '';
+      html += `<div class="versiculo"><span class="v-num">${num}</span><span class="v-txt">${texto}</span></div>`;
+    });
+
+    const tnome = tObj ? (tObj.name || tObj.englishName || tid) : tid;
+    html += `</div></div>
+      <p class="biblia-traducao">* Asterisco = Deuterocanônico (canon católico) · Tradução: ${tnome}</p>
+      <div class="divisor">✦ ✦ ✦</div>`;
+
+    box.innerHTML = html;
+  } catch(e) {
+    // Tenta próxima tradução disponível
+    const tList = await buscarAlternativa(bibliaLang, livro.id);
+    if (tList) {
+      bibliaTransl[bibliaLang] = tList;
+      return carregarCapitulo();
+    }
+    box.innerHTML = `<div class="erro-box">
+      <h3>⚠️ Tradução não disponível</h3>
+      <p>Não foi possível carregar "${livro[bibliaLang]}" na tradução selecionada.</p>
+      <p style="margin-top:.5rem;font-size:.85rem;color:var(--cinza)">${e.message}</p>
+    </div>`;
+  }
+}
+
+async function buscarAlternativa(lang, bookId) {
+  try {
+    const r = await fetch(`${BIBLE_API}/available_translations.json`);
+    const { translations } = await r.json();
+    const langCode = BIBLE_LANGS[lang];
+    const opts = translations
+      .filter(t => t.language.startsWith(langCode))
+      .sort((a,b) => b.numberOfBooks - a.numberOfBooks);
+    // Testa cada uma até achar uma que funcione
+    for (const t of opts.slice(0,5)) {
+      try {
+        const tr = await fetch(`${BIBLE_API}/${t.id}/${bookId}/1.json`);
+        if (tr.ok) return t;
+      } catch(_) {}
+    }
+  } catch(_) {}
+  return null;
+}
+
+function trocarIdioma(lang) {
+  bibliaLang = lang;
+  document.querySelectorAll('.bandeira-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('flag-' + lang).classList.add('ativo');
+  renderSelectLivro();
+  carregarCapitulo();
+}
+
+function trocarLivro() {
+  bibliaLivro = parseInt(document.getElementById('sel-livro').value);
+  bibliaCap   = 1;
+  carregarCapitulo();
+}
+
+function trocarCap(delta) {
+  const maxCap = CANON[bibliaLivro].cap;
+  bibliaCap = Math.max(1, Math.min(maxCap, bibliaCap + delta));
+  carregarCapitulo();
 }
 
 // ══ PWA ══
