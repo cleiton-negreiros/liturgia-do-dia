@@ -4,8 +4,8 @@
 //   - Shell do app (HTML, fontes): Cache first → sempre rápido
 //   - API de liturgia: Network first → sempre atualizado, fallback no cache
 
-const CACHE_SHELL   = 'liturgia-shell-v1';
-const CACHE_DADOS   = 'liturgia-dados-v1';
+const CACHE_SHELL   = 'liturgia-shell-v5';
+const CACHE_DADOS   = 'liturgia-dados-v5';
 
 const SHELL_ASSETS = [
   '/',
