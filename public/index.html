@@ -930,7 +930,30 @@ async function carregarCapitulo() {
     const r = await fetch(url);
     if (!r.ok) throw new Error(`Tradução "${tid}" não disponível para este livro (${r.status})`);
     const data = await r.json();
-    const verses = data.verses || data.chapter?.verses || [];
+    // A API retorna data.chapter.content[] com {type:'verse', number:N, content:[{text:'...'},...]}
+    // Ou às vezes data.verses[] com {verse:N, text:'...'} (formato legado)
+    let verses = [];
+    if (Array.isArray(data.verses) && data.verses.length > 0) {
+      // Formato legado
+      verses = data.verses.map(v => ({
+        num: v.verse || v.verseNumber || v.number || '',
+        txt: v.text || v.content || ''
+      }));
+    } else if (data.chapter && Array.isArray(data.chapter.content)) {
+      // Formato atual: filtra só os versículos
+      data.chapter.content.forEach(item => {
+        if (item.type === 'verse') {
+          // content é array de objetos {text, ...}
+          const txt = (item.content || [])
+            .map(p => typeof p === 'string' ? p : (p.text || ''))
+            .join(' ')
+            .trim();
+          verses.push({ num: item.number || '', txt });
+        }
+      });
+    }
+
+    if (verses.length === 0) throw new Error('Nenhum versículo encontrado (estrutura inesperada da API).');
 
     let html = `<div class="leitura-card">
       <p class="leitura-label">${livro.grupo}${livro.dc ? ' · Deuterocanônico' : ''}</p>
@@ -938,9 +961,7 @@ async function carregarCapitulo() {
       <div class="biblia-versiculos">`;
 
     verses.forEach(v => {
-      const num   = v.verse || v.verseNumber || v.number || '';
-      const texto = v.text  || v.content     || '';
-      html += `<div class="versiculo"><span class="v-num">${num}</span><span class="v-txt">${texto}</span></div>`;
+      html += `<div class="versiculo"><span class="v-num">${v.num}</span><span class="v-txt">${v.txt}</span></div>`;
     });
 
     const tnome = tObj ? (tObj.name || tObj.englishName || tid) : tid;
