@@ -930,27 +930,35 @@ async function carregarCapitulo() {
     const r = await fetch(url);
     if (!r.ok) throw new Error(`Tradução "${tid}" não disponível para este livro (${r.status})`);
     const data = await r.json();
-    // A API retorna data.chapter.content[] com {type:'verse', number:N, content:[{text:'...'},...]}
-    // Ou às vezes data.verses[] com {verse:N, text:'...'} (formato legado)
+    // Extrator recursivo: lida com strings, FormattedText{content:[]}, InlineLineBreak, etc.
+    function extrairTexto(node) {
+      if (!node) return '';
+      if (typeof node === 'string') return node;
+      if (Array.isArray(node)) return node.map(extrairTexto).filter(Boolean).join(' ');
+      if (typeof node === 'object') {
+        if (node.type === 'line_break') return '\n';
+        // FormattedText, InlineFootnote etc — desce em content
+        if (Array.isArray(node.content)) return extrairTexto(node.content);
+        if (node.text) return node.text;
+      }
+      return '';
+    }
+
     let verses = [];
-    if (Array.isArray(data.verses) && data.verses.length > 0) {
-      // Formato legado
-      verses = data.verses.map(v => ({
-        num: v.verse || v.verseNumber || v.number || '',
-        txt: v.text || v.content || ''
-      }));
-    } else if (data.chapter && Array.isArray(data.chapter.content)) {
-      // Formato atual: filtra só os versículos
+    if (data.chapter && Array.isArray(data.chapter.content)) {
+      // Formato helloao.org atual
       data.chapter.content.forEach(item => {
         if (item.type === 'verse') {
-          // content é array de objetos {text, ...}
-          const txt = (item.content || [])
-            .map(p => typeof p === 'string' ? p : (p.text || ''))
-            .join(' ')
-            .trim();
-          verses.push({ num: item.number || '', txt });
+          const txt = extrairTexto(item.content).replace(/\s+/g,' ').trim();
+          if (txt) verses.push({ num: item.number ?? '', txt });
         }
       });
+    } else if (Array.isArray(data.verses) && data.verses.length > 0) {
+      // Formato legado / bible-api.com
+      verses = data.verses.map(v => ({
+        num: v.verse || v.verseNumber || v.number || '',
+        txt: (v.text || v.content || '').trim()
+      })).filter(v => v.txt);
     }
 
     if (verses.length === 0) throw new Error('Nenhum versículo encontrado (estrutura inesperada da API).');
