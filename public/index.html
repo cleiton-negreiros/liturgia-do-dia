@@ -866,7 +866,6 @@ async function initBiblia() {
   if (bibliaInit) return;
   bibliaInit = true;
   renderSelectLivro();
-  await descobrirTraducoes();
   await carregarCapitulo();
 }
 
@@ -884,40 +883,12 @@ function renderSelectLivro() {
   sel.value = bibliaLivro;
 }
 
-async function descobrirTraducoes() {
-  const PREF = BIBLE_PREFERRED;
-  // Usa preferências pré-definidas + fallback via API
-  try {
-    const r = await fetch(`${BIBLE_API}/available_translations.json`);
-    const { translations } = await r.json();
-    ['pt','es','it','en'].forEach(lang => {
-      const langCode = BIBLE_LANGS[lang];
-      const available = translations.filter(t => t.language.startsWith(langCode));
-      // Prefere traduções com mais livros (canon completo)
-      available.sort((a,b) => b.numberOfBooks - a.numberOfBooks);
-      const pref = PREF[lang];
-      const match = pref.map(p => available.find(t => t.id === p)).find(Boolean)
-                 || available[0];
-      if (match) bibliaTransl[lang] = match;
-    });
-  } catch(e) {
-    // Fallback: usa IDs hardcoded
-    bibliaTransl = {
-      pt: { id:'NTLH',     shortName:'NTLH',    name:'Nova Tradução em Linguagem de Hoje',  englishName:'NTLH' },
-      es: { id:'RVR09',    shortName:'RVR09',   name:'Reina-Valera 1909',                   englishName:'RVR09' },
-      it: { id:'ITADIOD',  shortName:'DIOD',    name:'Diodati',                             englishName:'Diodati' },
-      en: { id:'ENGWEBP',  shortName:'WEB',     name:'World English Bible',                 englishName:'World English Bible' },
-    };
-  }
-}
+
 
 async function carregarCapitulo() {
   const livro = CANON[bibliaLivro];
-  const tObj  = bibliaTransl[bibliaLang];
-  const tid   = tObj ? tObj.id : (bibliaLang === 'en' ? 'ENGWEBP' : 'NTLH');
   const box   = document.getElementById('biblia-conteudo');
 
-  // Atualiza UI nav
   document.getElementById('cap-label').textContent = `Cap. ${bibliaCap}`;
   document.getElementById('btn-cap-prev').disabled = (bibliaCap <= 1);
   document.getElementById('btn-cap-next').disabled = (bibliaCap >= livro.cap);
@@ -926,90 +897,41 @@ async function carregarCapitulo() {
   box.innerHTML = `<div class="biblia-loading">✝ Carregando ${livro[bibliaLang]} ${bibliaCap}...</div>`;
 
   try {
-    const url = `${BIBLE_API}/${tid}/${livro.id}/${bibliaCap}.json`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`Tradução "${tid}" não disponível para este livro (${r.status})`);
+    const url = `/api/biblia?lang=${bibliaLang}&book=${livro.id}&cap=${bibliaCap}`;
+    const r   = await fetch(url);
     const data = await r.json();
-    // Extrator recursivo: lida com strings, FormattedText{content:[]}, InlineLineBreak, etc.
-    function extrairTexto(node) {
-      if (!node) return '';
-      if (typeof node === 'string') return node;
-      if (Array.isArray(node)) return node.map(extrairTexto).filter(Boolean).join(' ');
-      if (typeof node === 'object') {
-        if (node.type === 'line_break') return '\n';
-        // FormattedText, InlineFootnote etc — desce em content
-        if (Array.isArray(node.content)) return extrairTexto(node.content);
-        if (node.text) return node.text;
-      }
-      return '';
+
+    if (!data.sucesso && data.deuterocanonico) {
+      box.innerHTML = `<div class="leitura-card">
+        <p class="leitura-label">📖 Deuterocanônico</p>
+        <p class="leitura-referencia">${livro[bibliaLang]}</p>
+        <p class="leitura-texto" style="color:var(--cinza)">${data.mensagem}</p>
+      </div>`;
+      return;
     }
 
-    let verses = [];
-    if (data.chapter && Array.isArray(data.chapter.content)) {
-      // Formato helloao.org atual
-      data.chapter.content.forEach(item => {
-        if (item.type === 'verse') {
-          const txt = extrairTexto(item.content).replace(/\s+/g,' ').trim();
-          if (txt) verses.push({ num: item.number ?? '', txt });
-        }
-      });
-    } else if (Array.isArray(data.verses) && data.verses.length > 0) {
-      // Formato legado / bible-api.com
-      verses = data.verses.map(v => ({
-        num: v.verse || v.verseNumber || v.number || '',
-        txt: (v.text || v.content || '').trim()
-      })).filter(v => v.txt);
-    }
-
-    if (verses.length === 0) throw new Error('Nenhum versículo encontrado (estrutura inesperada da API).');
+    if (!data.sucesso) throw new Error(data.mensagem || 'Erro desconhecido');
 
     let html = `<div class="leitura-card">
       <p class="leitura-label">${livro.grupo}${livro.dc ? ' · Deuterocanônico' : ''}</p>
       <p class="leitura-referencia">${livro[bibliaLang]} ${bibliaCap}</p>
       <div class="biblia-versiculos">`;
 
-    verses.forEach(v => {
+    data.versiculos.forEach(v => {
       html += `<div class="versiculo"><span class="v-num">${v.num}</span><span class="v-txt">${v.txt}</span></div>`;
     });
 
-    const tnome = tObj ? (tObj.name || tObj.englishName || tid) : tid;
     html += `</div></div>
-      <p class="biblia-traducao">* Asterisco = Deuterocanônico (canon católico) · Tradução: ${tnome}</p>
+      <p class="biblia-traducao">Tradução: ${data.traducao}</p>
       <div class="divisor">✦ ✦ ✦</div>`;
 
     box.innerHTML = html;
   } catch(e) {
-    // Tenta próxima tradução disponível
-    const tList = await buscarAlternativa(bibliaLang, livro.id);
-    if (tList) {
-      bibliaTransl[bibliaLang] = tList;
-      return carregarCapitulo();
-    }
     box.innerHTML = `<div class="erro-box">
-      <h3>⚠️ Tradução não disponível</h3>
-      <p>Não foi possível carregar "${livro[bibliaLang]}" na tradução selecionada.</p>
-      <p style="margin-top:.5rem;font-size:.85rem;color:var(--cinza)">${e.message}</p>
+      <h3>⚠️ Erro ao carregar</h3>
+      <p>${e.message}</p>
     </div>`;
   }
-}
-
-async function buscarAlternativa(lang, bookId) {
-  try {
-    const r = await fetch(`${BIBLE_API}/available_translations.json`);
-    const { translations } = await r.json();
-    const langCode = BIBLE_LANGS[lang];
-    const opts = translations
-      .filter(t => t.language.startsWith(langCode))
-      .sort((a,b) => b.numberOfBooks - a.numberOfBooks);
-    // Testa cada uma até achar uma que funcione
-    for (const t of opts.slice(0,5)) {
-      try {
-        const tr = await fetch(`${BIBLE_API}/${t.id}/${bookId}/1.json`);
-        if (tr.ok) return t;
-      } catch(_) {}
-    }
-  } catch(_) {}
-  return null;
 }
 
 function trocarIdioma(lang) {
