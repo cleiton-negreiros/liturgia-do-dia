@@ -4,8 +4,10 @@
 //   - Shell do app (HTML, fontes): Cache first → sempre rápido
 //   - API de liturgia: Network first → sempre atualizado, fallback no cache
 
-const CACHE_SHELL   = 'liturgia-shell-v5';
-const CACHE_DADOS   = 'liturgia-dados-v5';
+// ⚠️ CACHE_VERSION é injetado automaticamente pelo script scripts/bump-cache.js
+// Não edite esta linha manualmente — basta fazer git push normalmente
+const CACHE_SHELL   = 'liturgia-shell-BUILD_TIMESTAMP';
+const CACHE_DADOS   = 'liturgia-dados-BUILD_TIMESTAMP';
 
 const SHELL_ASSETS = [
   '/',
