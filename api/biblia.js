@@ -3,7 +3,7 @@
 
 const TRADUCOES = {
   pt: { abbrev: 'almeida', nome: 'Almeida Revista e Corrigida' },
-  es: { abbrev: 'rv60',    nome: 'Reina-Valera 1960'           },
+  es: { abbrev: 'valera',  nome: 'Reina-Valera 1909'           },
   it: { abbrev: 'riveduta',nome: 'Riveduta'                    },
   en: { abbrev: 'kjv',     nome: 'King James Version'          },
 };
