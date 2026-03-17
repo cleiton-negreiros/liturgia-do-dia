@@ -244,6 +244,13 @@
 <main>
   <!-- PAINEL MISSA -->
   <div class="painel ativo" id="painel-missa">
+    <div class="missa-lang-bar">
+      <span class="missa-lang-label">Idioma:</span>
+      <button class="missa-lang-btn ativo" onclick="trocarIdiomasMissa('pt')" id="missa-flag-pt" title="Português">🇧🇷</button>
+      <button class="missa-lang-btn" onclick="trocarIdiomasMissa('es')" id="missa-flag-es" title="Español">🇪🇸</button>
+      <button class="missa-lang-btn" onclick="trocarIdiomasMissa('it')" id="missa-flag-it" title="Italiano">🇮🇹</button>
+      <button class="missa-lang-btn" onclick="trocarIdiomasMissa('en')" id="missa-flag-en" title="English">🇬🇧</button>
+    </div>
     <div class="loading"><span class="loading-icone">✝</span>Buscando a liturgia do dia...</div>
   </div>
 
@@ -447,7 +454,29 @@ function oracao(label, texto, delay){
     <p class="leitura-texto">${texto}</p></div>`;
 }
 
+
+// ══════════════════════════════════════════
+// SANTA MISSA — MULTI-IDIOMA
+// ══════════════════════════════════════════
+let missaLang = 'pt';
+
+function getBarra() {
+  return `<div class="missa-lang-bar">
+    <span class="missa-lang-label">Idioma:</span>
+    <button class="missa-lang-btn ${missaLang==='pt'?'ativo':''}" onclick="trocarIdiomasMissa('pt')" id="missa-flag-pt" title="Português">🇧🇷</button>
+    <button class="missa-lang-btn ${missaLang==='es'?'ativo':''}" onclick="trocarIdiomasMissa('es')" id="missa-flag-es" title="Español">🇪🇸</button>
+    <button class="missa-lang-btn ${missaLang==='it'?'ativo':''}" onclick="trocarIdiomasMissa('it')" id="missa-flag-it" title="Italiano">🇮🇹</button>
+    <button class="missa-lang-btn ${missaLang==='en'?'ativo':''}" onclick="trocarIdiomasMissa('en')" id="missa-flag-en" title="English">🇬🇧</button>
+  </div>`;
+}
+
+function trocarIdiomasMissa(lang) {
+  missaLang = lang;
+  carregarMissa();
+}
+
 async function carregarMissa(){
+  if (missaLang !== 'pt') { return carregarLiturgiaMultilang(dataISO(dataSel), missaLang); }
   document.getElementById('painel-missa').innerHTML=`<div class="loading"><span class="loading-icone">✝</span>Buscando a liturgia do dia...</div>`;
   liturgiaAtual=null;
   try{
@@ -521,11 +550,74 @@ function renderMissa(dados){
   html+=`<div class="divisor">✦ ✦ ✦</div>
     <p class="fonte-link">Fonte: <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia Diária</a></p>`;
 
-  document.getElementById('painel-missa').innerHTML=html;
+  // Preserva a barra de idiomas no topo
+  const painelMissa = document.getElementById('painel-missa');
+  const barraAtual = painelMissa.querySelector('.missa-lang-bar');
+  painelMissa.innerHTML = (barraAtual ? barraAtual.outerHTML : getBarra()) + html;
   atualizarLinkWhatsApp();
 }
 
 // ══ LAUDES ══
+
+async function carregarLiturgiaMultilang(dataStr, lang) {
+  const box = document.getElementById('painel-missa');
+  // Mantém as bandeiras visíveis no topo
+  const barraHtml = getBarra();
+
+  const avisoLimite = `<div class="missa-aviso-lang">
+    ℹ️ As leituras em ES/IT/EN são fornecidas pelo <strong>Evangelizo.org</strong>.
+    Disponíveis apenas para os próximos 30 dias a partir de hoje.
+  </div>`;
+
+  box.innerHTML = barraHtml + avisoLimite +
+    `<div class="loading-msg"><span class="cruz-loading">✝</span> Carregando leituras...</div>`;
+
+  try {
+    const r = await fetch(`/api/missa-multilang?data=${dataStr}&lang=${lang}`);
+    const d = await r.json();
+
+    if (!d.sucesso) {
+      box.innerHTML = barraHtml + avisoLimite + `<div class="erro-box">
+        <h3>⚠️ ${lang === 'es' ? 'Error' : lang === 'it' ? 'Errore' : 'Error'}</h3>
+        <p>${d.mensagem}</p>
+      </div>`;
+      return;
+    }
+
+    const FLAG = { es:'🇪🇸', it:'🇮🇹', en:'🇬🇧' };
+    let html = barraHtml + avisoLimite;
+
+    // Título litúrgico
+    if (d.liturgia) {
+      html += `<div class="dia-liturgico-header">
+        <span class="dia-liturgico-tag">${FLAG[lang] || ''} ${d.liturgia}</span>
+        ${d.santo ? `<span class="dia-liturgico-santo">✦ ${d.santo}</span>` : ''}
+      </div>`;
+    }
+
+    // Leituras
+    d.leituras.forEach((l, i) => {
+      html += `<div class="leitura-card" style="animation-delay:${i*.08}s">
+        <p class="leitura-label">${l.tipo}</p>
+        <p class="leitura-referencia">${l.titulo || ''}</p>
+        <p class="leitura-texto">${(l.texto || '').replace(/\n/g,'<br>')}</p>
+      </div>`;
+    });
+
+    html += `<p style="font-family:'Lato',sans-serif;font-size:.72rem;color:var(--cinza);text-align:center;margin-top:1rem">
+      Fonte: <a href="https://evangelizo.org" target="_blank" style="color:var(--ouro)">evangelizo.org</a>
+    </p>
+    <div class="divisor">✦ ✦ ✦</div>`;
+
+    box.innerHTML = html;
+
+  } catch(e) {
+    box.innerHTML = barraHtml + avisoLimite + `<div class="erro-box">
+      <h3>⚠️ Erro de conexão</h3><p>${e.message}</p>
+    </div>`;
+  }
+}
+
 async function carregarLaudes(){
   laudesCarregadas=true;
   document.getElementById('painel-laudes').innerHTML=`<div class="loading"><span class="loading-icone">🌅</span>Buscando as Laudes...</div>`;
