@@ -237,6 +237,7 @@
   <button class="tab-btn ativo" onclick="mudarTab('missa')">✝ Santa Missa</button>
   <button class="tab-btn"       onclick="mudarTab('laudes')">🌅 Laudes</button>
   <button class="tab-btn"       onclick="mudarTab('biblia')">📖 Bíblia</button>
+  <button class="tab-btn"       onclick="mudarTab('oracoes')">🙏 Orações</button>
   <button class="tab-btn"       onclick="mudarTab('jose')">🌿 São José</button>
   <button class="tab-btn"       onclick="mudarTab('notas')">📝 Anotações</button>
 </div>
@@ -285,6 +286,22 @@
     <div id="biblia-conteudo">
       <div class="biblia-loading">✝ Carregando...</div>
     </div>
+  </div>
+
+
+  <!-- PAINEL ORAÇÕES -->
+  <div class="painel" id="painel-oracoes">
+    <div class="oracoes-header">
+      <h2 class="oracoes-titulo">🙏 Orações</h2>
+      <div class="bandeiras" id="oracoes-bandeiras">
+        <button class="bandeira-btn ativo" onclick="trocarIdiomaOracoes('pt')" id="oracao-flag-pt" title="Português">🇧🇷</button>
+        <button class="bandeira-btn" onclick="trocarIdiomaOracoes('es')" id="oracao-flag-es" title="Español">🇪🇸</button>
+        <button class="bandeira-btn" onclick="trocarIdiomaOracoes('it')" id="oracao-flag-it" title="Italiano">🇮🇹</button>
+        <button class="bandeira-btn" onclick="trocarIdiomaOracoes('en')" id="oracao-flag-en" title="English">🇬🇧</button>
+      </div>
+    </div>
+    <div class="oracao-nav" id="oracao-nav"></div>
+    <div id="oracao-conteudo"></div>
   </div>
 
   <!-- PAINEL NOVENA SÃO JOSÉ -->
@@ -378,13 +395,14 @@ function initTema(){
 function mudarTab(tab){
   tabAtiva = tab;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('ativo', ['missa','laudes','biblia','jose','notas'][i]===tab);
+    b.classList.toggle('ativo', ['missa','laudes','biblia','oracoes','jose','notas'][i]===tab);
   });
   document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
   document.getElementById('painel-'+tab).classList.add('ativo');
 
   if(tab==='laudes' && !laudesCarregadas) carregarLaudes();
   if(tab==='biblia' && !bibliaInit) initBiblia();
+  if(tab==='oracoes') renderOracoes();
   if(tab==='jose') renderNovena();
   if(tab==='notas') renderNotas();
 }
@@ -1044,6 +1062,123 @@ function trocarCap(delta) {
   const maxCap = CANON[bibliaLivro].cap;
   bibliaCap = Math.max(1, Math.min(maxCap, bibliaCap + delta));
   carregarCapitulo();
+}
+
+
+// ══════════════════════════════════════════
+// ORAÇÕES — MULTI-IDIOMA
+// ══════════════════════════════════════════
+let oracoesLang   = 'pt';
+let oracaoAtiva   = 0;
+
+const ORACOES = [
+  // ── 1. Vinde, Espírito Santo ────────────────────────────────────────
+  {
+    pt: {
+      titulo: 'Vinde, Espírito Santo',
+      intro:  'Oração tradicional ao Espírito Santo',
+      texto:  `Vinde, Espírito Santo,\nenchei os corações dos vossos fiéis\ne acendei neles o fogo do vosso amor.\n\nV. Enviai o vosso Espírito e serão criadas todas as coisas.\nR. E renovareis a face da terra.\n\nOremos:\nÓ Deus, que instruístes os corações dos vossos fiéis com a luz do Espírito Santo, fazei que pelo mesmo Espírito tenhamos o gosto das coisas retas e gozemos sempre da sua consolação. Por Cristo Nosso Senhor.\n\nAmém.`
+    },
+    es: {
+      titulo: 'Ven, Espíritu Santo',
+      intro:  'Oración tradicional al Espíritu Santo',
+      texto:  `Ven, Espíritu Santo,\nllena los corazones de tus fieles\ny enciende en ellos el fuego de tu amor.\n\nV. Envía tu Espíritu y serán creadas todas las cosas.\nR. Y renovarás la faz de la tierra.\n\nOremos:\nOh Dios, que iluminaste los corazones de tus fieles con la luz del Espíritu Santo, concédenos que por el mismo Espíritu conozcamos lo que es recto y gocemos siempre de tu consuelo. Por Cristo nuestro Señor.\n\nAmén.`
+    },
+    it: {
+      titulo: 'Vieni, Spirito Santo',
+      intro:  'Preghiera tradizionale allo Spirito Santo',
+      texto:  `Vieni, Spirito Santo,\nriempi i cuori dei tuoi fedeli\ne accendi in essi il fuoco del tuo amore.\n\nV. Manda il tuo Spirito e tutto sarà creato.\nR. E rinnoverai la faccia della terra.\n\nPreghiamo:\nO Dio, che hai istruito i cuori dei fedeli con la luce dello Spirito Santo, concedici di gustare ciò che è retto per mezzo dello stesso Spirito e di godere sempre della sua consolazione. Per Cristo nostro Signore.\n\nAmen.`
+    },
+    en: {
+      titulo: 'Come, Holy Spirit',
+      intro:  'Traditional prayer to the Holy Spirit',
+      texto:  `Come, Holy Spirit,\nfill the hearts of your faithful\nand kindle in them the fire of your love.\n\nV. Send forth your Spirit and they shall be created.\nR. And you shall renew the face of the earth.\n\nLet us pray:\nO God, who by the light of the Holy Spirit did instruct the hearts of the faithful, grant that by the same Holy Spirit we may be truly wise and ever rejoice in his consolations. Through Christ Our Lord.\n\nAmen.`
+    },
+  },
+
+  // ── 2. Oração do Anjo da Guarda ─────────────────────────────────────
+  {
+    pt: {
+      titulo: 'Oração do Anjo da Guarda',
+      intro:  'Oração tradicional ao Anjo Custódio',
+      texto:  `Anjo de Deus,\nmeu zeloso guardador,\na quem o amor divino me confiou,\niluminai, guardai,\nregei e governai\na mim, que te fui confiado\nnesta dia (esta noite).\n\nAmém.`
+    },
+    es: {
+      titulo: 'Oración al Ángel de la Guarda',
+      intro:  'Oración tradicional al Ángel Custodio',
+      texto:  `Ángel de Dios,\nmi piadoso guardián,\na quien la bondad divina me ha encomendado,\nilumíname, guárdame,\ndiríjeme y gobiérname\nen este día (esta noche).\n\nAmén.`
+    },
+    it: {
+      titulo: 'Preghiera all\'Angelo Custode',
+      intro:  'Preghiera tradizionale all\'Angelo Custode',
+      texto:  `Angelo di Dio,\nche sei il mio custode,\nillumina, custodisci,\nreggi e governa me,\nche ti fui affidato\ndalla pietà celeste.\n\nAmen.`
+    },
+    en: {
+      titulo: 'Guardian Angel Prayer',
+      intro:  'Traditional prayer to the Guardian Angel',
+      texto:  `Angel of God,\nmy guardian dear,\nto whom God's love\ncommits me here,\never this day (night)\nbe at my side,\nto light and guard,\nto rule and guide.\n\nAmen.`
+    },
+  },
+
+  // ── 3. Oração Vocacional da Comunidade Shalom ────────────────────────
+  {
+    pt: {
+      titulo: 'Oração Vocacional da Comunidade Shalom',
+      intro:  'Comunidade Católica Shalom',
+      texto:  `Pai de amor e de bondade, cheios de gratidão, porque em tua imensa misericórdia nos concedeste o dom da Vocação Shalom através do Ressuscitado que passou pela Cruz, nós renovamos hoje o compromisso de vivermos o nosso chamado com todo amor e fidelidade.\n\nTu és o nosso Deus que mereces todo amor do mundo, e por amor queremos ser santos, queremos ofertar as nossas vidas, na vida ofertada do teu Filho, para Nele cooperar com a reconciliação do homem contigo.\n\nEnvia o teu Espírito Santo, e inflama-nos com o Amor Esponsal, para que possamos, em Ti, tudo realizar e a tudo nos dispor conforme a tua Santa Vontade.\n\nDá-nos, Senhor, boas, santas e abundantes vocações, para que possamos cumprir a nossa missão de anunciar a paz onde a Igreja e a humanidade precisarem de nós.\n\nSustenta com a Tua graça todas as pessoas que constituístes como família Shalom e aumenta em nós a generosidade na doação irrevogável da nossa vida.\n\nPela intercessão da Rainha da Paz, faz-nos crescer na vida de Contemplação, Unidade e Evangelização.\n\nQueremos, ainda, com o nosso coração cheio de desejo, dizer:\nOBRIGADO, SENHOR, POR NOS TERES ESCOLHIDO.\n\nAmém!`
+    },
+    es: {
+      titulo: 'Oración Vocacional de la Comunidad Shalom',
+      intro:  'Comunidad Católica Shalom',
+      texto:  `Padre de amor y de bondad, llenos de gratitud, porque en tu inmensa misericordia nos concediste el don de la Vocación Shalom a través del Resucitado que pasó por la Cruz, renovamos hoy el compromiso de vivir nuestra vocación con todo amor y fidelidad.\n\nTú eres nuestro Dios que mereces todo el amor del mundo, y por amor queremos ser santos, queremos ofrecer nuestras vidas, en la vida ofrendada de tu Hijo, para cooperar con Él en la reconciliación del hombre contigo.\n\nEnvía tu Espíritu Santo e inflámanos con el Amor Esponsal, para que podamos, en Ti, realizarlo todo y disponernos a todo conforme a tu Santa Voluntad.\n\nDanos, Señor, buenas, santas y abundantes vocaciones, para que podamos cumplir nuestra misión de anunciar la paz donde la Iglesia y la humanidad nos necesiten.\n\nSostén con tu gracia a todas las personas que has constituido como familia Shalom y aumenta en nosotros la generosidad en la donación irrevocable de nuestra vida.\n\nPor la intercesión de la Reina de la Paz, haznos crecer en la vida de Contemplación, Unidad y Evangelización.\n\nQueremos también, con nuestro corazón lleno de deseo, decir:\nGRACIAS, SEÑOR, POR HABERNOS ELEGIDO.\n\n¡Amén!`
+    },
+    it: {
+      titulo: 'Preghiera Vocazionale della Comunità Shalom',
+      intro:  'Comunità Cattolica Shalom',
+      texto:  `Padre di amore e di bontà, pieni di gratitudine, perché nella tua immensa misericordia ci hai concesso il dono della Vocazione Shalom attraverso il Risorto che ha attraversato la Croce, rinnoviamo oggi l'impegno di vivere la nostra vocazione con tutto amore e fedeltà.\n\nTu sei il nostro Dio che meriti tutto l'amore del mondo, e per amore vogliamo essere santi, vogliamo offrire le nostre vite, nella vita offerta del tuo Figlio, per cooperare con Lui alla riconciliazione dell'uomo con te.\n\nManda il tuo Spirito Santo e infiammaci con l'Amore Sponsale, affinché possiamo, in Te, realizzare tutto e disporci a tutto secondo la tua Santa Volontà.\n\nDonaci, Signore, buone, sante e abbondanti vocazioni, perché possiamo compiere la nostra missione di annunciare la pace dove la Chiesa e l'umanità avranno bisogno di noi.\n\nSostieni con la tua grazia tutte le persone che hai costituito come famiglia Shalom e aumenta in noi la generosità nel dono irrevocabile della nostra vita.\n\nPer l'intercessione della Regina della Pace, facci crescere nella vita di Contemplazione, Unità ed Evangelizzazione.\n\nVogliamo ancora, con il nostro cuore pieno di desiderio, dire:\nGRAZIE, SIGNORE, PER AVERCI SCELTI.\n\nAmen!`
+    },
+    en: {
+      titulo: 'Shalom Community Vocational Prayer',
+      intro:  'Catholic Community Shalom',
+      texto:  `Father of love and goodness, full of gratitude, because in your immense mercy you granted us the gift of the Shalom Vocation through the Risen One who passed through the Cross, we renew today our commitment to live our calling with all love and fidelity.\n\nYou are our God who deserves all the love in the world, and out of love we want to be holy, we want to offer our lives, in the offered life of your Son, to cooperate with him in the reconciliation of humanity with you.\n\nSend your Holy Spirit and inflame us with Spousal Love, so that in you we may accomplish all things and dispose ourselves entirely according to your Holy Will.\n\nGrant us, Lord, good, holy and abundant vocations, so that we may fulfill our mission of proclaiming peace wherever the Church and humanity need us.\n\nSustain with your grace all the people you have constituted as the Shalom family and increase in us generosity in the irrevocable gift of our lives.\n\nThrough the intercession of the Queen of Peace, make us grow in the life of Contemplation, Unity and Evangelization.\n\nWe also want, with our hearts full of desire, to say:\nTHANK YOU, LORD, FOR HAVING CHOSEN US.\n\nAmen!`
+    },
+  },
+];
+
+function renderOracoes() {
+  // Botões de navegação
+  const nav = document.getElementById('oracao-nav');
+  nav.innerHTML = ORACOES.map((o, i) => {
+    const t = o[oracoesLang]?.titulo || o.pt.titulo;
+    return `<button class="oracao-nav-btn ${i===oracaoAtiva?'ativo':''}" onclick="selecionarOracao(${i})">${t}</button>`;
+  }).join('');
+
+  // Conteúdo
+  const o    = ORACOES[oracaoAtiva];
+  const lang = o[oracoesLang] ? oracoesLang : 'pt';
+  const d    = o[lang];
+
+  document.getElementById('oracao-conteudo').innerHTML = `
+    <div class="oracao-bloco">
+      <div class="oracao-card">
+        <p class="leitura-label">${d.intro}</p>
+        <p class="leitura-referencia">${d.titulo}</p>
+        <p class="leitura-texto" style="white-space:pre-line">${d.texto.replace(/\b(OBRIGADO.*?ESCOLHIDO|GRACIAS.*?ELEGIDO|GRAZIE.*?SCELTI|THANK YOU.*?CHOSEN)\b/g, '<span class="oracao-destaque">$1</span>')}</p>
+      </div>
+      <div class="divisor">✦ ✦ ✦</div>
+    </div>`;
+}
+
+function selecionarOracao(idx) {
+  oracaoAtiva = idx;
+  renderOracoes();
+}
+
+function trocarIdiomaOracoes(lang) {
+  oracoesLang = lang;
+  document.querySelectorAll('#oracoes-bandeiras .bandeira-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('oracao-flag-' + lang).classList.add('ativo');
+  renderOracoes();
 }
 
 // ══ PWA ══
