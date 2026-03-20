@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-tema="claro">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <meta name="viewport" content="890213162973-71mbqj80cnqde7pu242mrom965rgv43p.apps.googleusercontent.com"/>
   <title>Liturgia do Dia</title>
   <link rel="manifest" href="/manifest.json"/>
   <meta name="theme-color" content="#6B1A1A"/>
@@ -205,15 +205,46 @@
       .toggle-label{display:none;}
     }
   </style>
+  <!-- Google Identity Services — biblioteca oficial de login com Google -->
+  <!-- async = carrega em paralelo, não bloqueia a página -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <!-- SEU_CLIENT_ID será substituído pelo ID real no Vercel -->
+  <meta name="google-client-id" content="SEU_CLIENT_ID.apps.googleusercontent.com"/>
 </head>
 <body>
 
 <header>
+  <!-- Toggle tema (lado direito) -->
   <div class="toggle-tema" onclick="alternarTema()">
     <span class="toggle-label" id="label-tema">ESCURO</span>
     <div class="toggle-switch"></div>
     <span id="icone-tema">🌙</span>
   </div>
+
+  <!-- Login Google (lado esquerdo) -->
+  <div class="auth-wrap">
+    <!-- Estado deslogado: botão "Entrar" -->
+    <button class="btn-login" id="btn-login" onclick="abrirLoginGoogle()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 11h8.533c.044.385.067.78.067 1.184 0 3.37-1.2 6.223-3.2 8.184l-4.8-4.8c.73-.583 1.267-1.382 1.467-2.368H12V11zm-1 9.8C5.8 19.467 2 16.133 2 12c0-5.523 4.477-10 10-10 2.7 0 5.16 1.067 6.98 2.8L15 8.8A6.98 6.98 0 0012 8c-3.867 0-7 3.133-7 7s3.133 7 7 7c2.133 0 4.067-.933 5.4-2.4l4.8 4.8A9.96 9.96 0 0112 22c-.338 0-.672-.008-1-.02V20.8z"/>
+      </svg>
+      Entrar
+    </button>
+
+    <!-- Estado logado: avatar com dropdown -->
+    <div class="user-menu" id="user-menu">
+      <button class="user-avatar-btn" onclick="toggleDropdown()">
+        <img class="user-avatar" id="user-avatar" src="" alt="Foto de perfil"/>
+        <span class="user-nome" id="user-nome"></span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown">
+        <p class="user-dropdown-nome" id="dropdown-nome"></p>
+        <p class="user-dropdown-email" id="dropdown-email"></p>
+        <button class="btn-logout" onclick="fazerLogout()">↩ Sair da conta</button>
+      </div>
+    </div>
+  </div>
+
   <div class="header-inner">
     <p class="site-subtitle">† Palavra de Deus para hoje</p>
     <h1 class="site-title">Liturgia do Dia</h1>
@@ -273,16 +304,35 @@
         <button class="bandeira-btn" onclick="trocarIdioma('en')" title="English"   id="flag-en">🇬🇧</button>
       </div>
     </div>
-    <div class="biblia-nav">
-      <select class="biblia-select" id="sel-livro" onchange="trocarLivro()">
-        <option>Carregando...</option>
-      </select>
-      <div class="cap-nav">
-        <button onclick="trocarCap(-1)" id="btn-cap-prev">‹</button>
-        <span class="cap-label" id="cap-label">Cap. 1</span>
-        <button onclick="trocarCap(1)"  id="btn-cap-next">›</button>
+    <!-- BUSCA NA BÍBLIA: dois modos de aba -->
+    <div class="biblia-busca-wrap">
+      <div class="biblia-busca-tabs">
+        <button class="busca-tab ativo" id="tab-leitura"    onclick="mudarModoBiblia('leitura')">📖 Leitura</button>
+        <button class="busca-tab"       id="tab-referencia" onclick="mudarModoBiblia('referencia')">🔍 Referência</button>
+        <button class="busca-tab"       id="tab-palavra"    onclick="mudarModoBiblia('palavra')">✦ Palavra</button>
+      </div>
+      <div class="biblia-busca-linha" id="biblia-busca-linha" style="display:none">
+        <input class="biblia-busca-input" id="biblia-busca-input"
+               placeholder="Ex: Jo 3,16  ou  amor"
+               onkeydown="if(event.key==='Enter') executarBusca()"/>
+        <button class="biblia-busca-btn" onclick="executarBusca()" title="Buscar">🔍</button>
       </div>
     </div>
+
+    <!-- Navegação padrão (livro + capítulo) -->
+    <div id="biblia-leitura-nav">
+      <div class="biblia-nav">
+        <select class="biblia-select" id="sel-livro" onchange="trocarLivro()">
+          <option>Carregando...</option>
+        </select>
+        <div class="cap-nav">
+          <button onclick="trocarCap(-1)" id="btn-cap-prev">‹</button>
+          <span class="cap-label" id="cap-label">Cap. 1</span>
+          <button onclick="trocarCap(1)"  id="btn-cap-next">›</button>
+        </div>
+      </div>
+    </div>
+
     <div id="biblia-conteudo">
       <div class="biblia-loading">✝ Carregando...</div>
     </div>
@@ -353,7 +403,7 @@
 </div>
 
 <footer>
-  Liturgia do Dia · <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia</a> · Laudes: <a href="https://liturgia.cancaonova.com" target="_blank">Canção Nova</a> · Feito com fé 🙏
+  Liturgia do Dia · <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia</a> · Laudes: <a href="https://www.paulus.com.br/portal/liturgia-diaria-das-horas/" target="_blank">Canção Nova</a> · Feito com fé, código e IA 🙏
 </footer>
 
 <script>
@@ -1181,6 +1231,293 @@ function trocarIdiomaOracoes(lang) {
   renderOracoes();
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// LOGIN COM GOOGLE
+// ══════════════════════════════════════════════════════════════════
+// AULA: Estado do usuário — null = deslogado, objeto = logado
+let usuarioAtual = null;
+
+// ── Inicializar o SDK do Google ─────────────────────────────────
+// Esta função é chamada automaticamente quando a lib do Google carrega.
+// O 'data-meta' com o CLIENT_ID foi adicionado no <head>.
+function initGoogleLogin() {
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  if (!clientId || clientId === 'SEU_CLIENT_ID.apps.googleusercontent.com') return;
+
+  // Inicializa o Google Identity Services
+  google.accounts.id.initialize({
+    client_id: clientId,
+    // callback: função chamada quando o usuário confirma o login no popup
+    callback: handleCredentialResponse,
+    auto_select: false,  // não logar automaticamente
+    cancel_on_tap_outside: true,
+  });
+}
+
+// ── Abre o popup de login do Google ─────────────────────────────
+function abrirLoginGoogle() {
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  if (!clientId || clientId.includes('SEU_CLIENT_ID')) {
+    alert('⚙️ Login ainda não configurado.\n\nO administrador precisa adicionar o GOOGLE_CLIENT_ID no Vercel.');
+    return;
+  }
+  google.accounts.id.prompt();
+}
+
+// ── Processa o token retornado pelo Google ───────────────────────
+// AULA: Quando o usuário escolhe a conta no popup do Google,
+// esta função é chamada com o "credential" (token JWT).
+// Mandamos esse token para nosso servidor verificar.
+async function handleCredentialResponse(response) {
+  try {
+    const r = await fetch('/api/auth-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
+    });
+    const data = await r.json();
+
+    if (data.sucesso) {
+      usuarioAtual = data.usuario;
+      salvarUsuario(usuarioAtual);
+      atualizarUILogin();
+    } else {
+      console.error('Login falhou:', data.erro);
+    }
+  } catch (e) {
+    console.error('Erro no login:', e);
+  }
+}
+
+// ── Persistência: salva/carrega usuário no localStorage ─────────
+// AULA: Salvamos o usuário para que ele continue logado
+// mesmo depois de fechar e reabrir o navegador.
+function salvarUsuario(u) {
+  localStorage.setItem('liturgia-usuario', JSON.stringify(u));
+}
+function carregarUsuario() {
+  const s = localStorage.getItem('liturgia-usuario');
+  if (s) try { return JSON.parse(s); } catch(_) {}
+  return null;
+}
+
+// ── Atualiza a interface conforme estado do login ────────────────
+function atualizarUILogin() {
+  const loginBtn  = document.getElementById('btn-login');
+  const userMenu  = document.getElementById('user-menu');
+
+  if (usuarioAtual) {
+    // Logado: esconde botão, mostra avatar
+    loginBtn.style.display = 'none';
+    userMenu.classList.add('ativo');
+
+    document.getElementById('user-avatar').src     = usuarioAtual.foto || '';
+    document.getElementById('user-nome').textContent = usuarioAtual.nome?.split(' ')[0] || '';
+    document.getElementById('dropdown-nome').textContent  = usuarioAtual.nome  || '';
+    document.getElementById('dropdown-email').textContent = usuarioAtual.email || '';
+  } else {
+    // Deslogado: mostra botão, esconde avatar
+    loginBtn.style.display = '';
+    userMenu.classList.remove('ativo');
+  }
+}
+
+// ── Abre/fecha o dropdown do usuário ────────────────────────────
+function toggleDropdown() {
+  document.getElementById('user-dropdown').classList.toggle('aberto');
+}
+// Fecha o dropdown ao clicar fora dele
+document.addEventListener('click', e => {
+  if (!e.target.closest('.user-menu')) {
+    document.getElementById('user-dropdown')?.classList.remove('aberto');
+  }
+});
+
+// ── Logout ───────────────────────────────────────────────────────
+function fazerLogout() {
+  usuarioAtual = null;
+  localStorage.removeItem('liturgia-usuario');
+  document.getElementById('user-dropdown').classList.remove('aberto');
+  atualizarUILogin();
+  // Revoga o token no Google (boa prática)
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  if (clientId && !clientId.includes('SEU_CLIENT_ID') && typeof google !== 'undefined') {
+    google.accounts.id.disableAutoSelect();
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// BUSCA NA BÍBLIA
+// ══════════════════════════════════════════════════════════════════
+// AULA: Três modos de visualização da Bíblia:
+//   - 'leitura'    : navegação normal por livro/capítulo (padrão)
+//   - 'referencia' : digita "Jo 3,16" → vai direto ao versículo
+//   - 'palavra'    : digita "amor" → lista versículos que contêm a palavra
+
+let bibliaModoBusca = 'leitura';  // modo atual
+
+// ── Muda entre os modos (abas de busca) ─────────────────────────
+function mudarModoBiblia(modo) {
+  bibliaModoBusca = modo;
+
+  // Atualiza as abas ativas
+  document.querySelectorAll('.busca-tab').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('tab-' + modo).classList.add('ativo');
+
+  const linhaInput = document.getElementById('biblia-busca-linha');
+  const navLeitura = document.getElementById('biblia-leitura-nav');
+  const input      = document.getElementById('biblia-busca-input');
+  const box        = document.getElementById('biblia-conteudo');
+
+  if (modo === 'leitura') {
+    // Modo padrão: esconde campo de busca, mostra navegação normal
+    linhaInput.style.display = 'none';
+    navLeitura.style.display = '';
+    carregarCapitulo();  // recarrega o capítulo atual
+
+  } else if (modo === 'referencia') {
+    linhaInput.style.display = '';
+    navLeitura.style.display = 'none';
+    input.placeholder = 'Ex: Jo 3,16 · Gn 1,1 · Salmos 23';
+    box.innerHTML = '<p class="busca-vazia">Digite uma referência bíblica e pressione Enter</p>';
+    input.focus();
+
+  } else if (modo === 'palavra') {
+    linhaInput.style.display = '';
+    navLeitura.style.display = 'none';
+    input.placeholder = 'Ex: amor · ressurreição · paz · misericórdia';
+    box.innerHTML = '<p class="busca-vazia">Digite uma palavra para buscar no Novo Testamento</p>';
+    input.focus();
+  }
+}
+
+// ── Executa a busca (chamada pelo botão ou Enter) ────────────────
+async function executarBusca() {
+  const q   = document.getElementById('biblia-busca-input').value.trim();
+  const box = document.getElementById('biblia-conteudo');
+  if (!q) return;
+
+  // AULA: Feedback imediato — mostra "carregando" enquanto espera a API
+  box.innerHTML = `<div class="busca-loading">🔍 Buscando "${q}"...</div>`;
+
+  try {
+    const url = `/api/biblia-busca?q=${encodeURIComponent(q)}&lang=${bibliaLang}&modo=${bibliaModoBusca}`;
+    const r    = await fetch(url);
+    const data = await r.json();
+
+    if (!data.sucesso) {
+      box.innerHTML = `<div class="busca-vazia">⚠️ ${data.mensagem}</div>`;
+      return;
+    }
+
+    if (data.modo === 'referencia') {
+      renderResultadoReferencia(data);
+    } else {
+      renderResultadosPalavra(data);
+    }
+
+  } catch(e) {
+    box.innerHTML = `<div class="erro-box"><h3>⚠️ Erro de conexão</h3><p>${e.message}</p></div>`;
+  }
+}
+
+// ── Renderiza resultado de busca por referência ──────────────────
+// AULA: Mostra o capítulo inteiro e destaca o versículo específico.
+// Usamos o símbolo <mark> do HTML para realçar o texto — é semântico
+// (significa "conteúdo relevante") e estilizamos com CSS.
+function renderResultadoReferencia(data) {
+  const box = document.getElementById('biblia-conteudo');
+
+  let html = `<div class="leitura-card">
+    <p class="leitura-label">${data.livro} · Capítulo ${data.cap}</p>
+    <p class="leitura-referencia">${data.livro} ${data.cap}</p>
+    <div class="biblia-versiculos">`;
+
+  data.versiculos.forEach(v => {
+    const destaque = v.num === data.destaque;
+    // Destaca o versículo buscado com borda e fundo especial
+    html += `<div class="versiculo${destaque ? ' versiculo-destaque' : ''}"
+                  id="ver-${v.num}">
+      <span class="v-num">${v.num}</span>
+      <span class="v-txt">${v.txt}</span>
+    </div>`;
+  });
+
+  html += `</div></div>
+    <p class="biblia-traducao">Tradução: ${data.traducao}</p>`;
+
+  box.innerHTML = html;
+
+  // AULA: scrollIntoView — rola a página até o elemento ficar visível.
+  // 'behavior: smooth' faz a rolagem ser animada (suave).
+  if (data.destaque) {
+    setTimeout(() => {
+      document.getElementById(`ver-${data.destaque}`)?.scrollIntoView({
+        behavior: 'smooth', block: 'center'
+      });
+    }, 100);
+  }
+}
+
+// ── Renderiza lista de resultados de busca por palavra ───────────
+function renderResultadosPalavra(data) {
+  const box = document.getElementById('biblia-conteudo');
+  const q   = data.busca;
+
+  if (!data.resultados || data.resultados.length === 0) {
+    box.innerHTML = `<div class="busca-vazia">
+      🔍 Nenhum resultado para "<strong>${q}</strong>" no Novo Testamento.<br>
+      <small style="margin-top:.5rem;display:block">Tente outra palavra ou verifique a grafia na tradução ${data.traducao}.</small>
+    </div>`;
+    return;
+  }
+
+  // AULA: RegExp com flag 'gi' → busca global (todas as ocorrências)
+  // e case-insensitive (maiúsculas/minúsculas). Usamos replace() para
+  // envolver cada ocorrência num <mark>.
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+
+  let html = `<p class="busca-total">
+    ${data.total} resultado${data.total !== 1 ? 's' : ''} para
+    "<strong>${q}</strong>" no Novo Testamento · ${data.traducao}
+  </p>`;
+
+  data.resultados.forEach((r, i) => {
+    // Destaca a palavra buscada no texto
+    const textoDestacado = r.texto.replace(regex, '<mark>$1</mark>');
+    html += `<div class="busca-resultado-item" style="animation-delay:${i * 0.05}s"
+                  onclick="irParaVersiculoBusca('${r.livro_id}', ${r.livro_num}, ${r.cap}, ${r.ver})">
+      <p class="busca-ref">${r.livro} ${r.cap},${r.ver}</p>
+      <p class="busca-trecho">${textoDestacado}</p>
+    </div>`;
+  });
+
+  box.innerHTML = html;
+}
+
+// ── Navega para o livro/capítulo a partir de um resultado de busca
+function irParaVersiculoBusca(livroId, livroNum, cap, ver) {
+  // Encontra o índice do livro no array CANON
+  const idx = CANON.findIndex(l => l.id === livroId);
+  if (idx === -1) return;
+
+  // Volta para o modo de leitura e carrega o capítulo
+  bibliaLivro = idx;
+  bibliaCap   = cap;
+  mudarModoBiblia('leitura');
+
+  // Aguarda o capítulo carregar e depois destaca o versículo
+  setTimeout(() => {
+    const elVer = document.getElementById(`ver-${ver}`);
+    if (elVer) {
+      elVer.classList.add('versiculo-destaque');
+      elVer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 800);
+}
+
 // ══ PWA ══
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
@@ -1195,6 +1532,12 @@ initTema();
 document.getElementById('data-hoje').textContent=dataBR(dataSel);
 syncBotoes();
 carregarMissa();
+
+// Login: recupera sessão salva do localStorage
+usuarioAtual = carregarUsuario();
+atualizarUILogin();
+// Quando a lib do Google termina de carregar, inicializa o SDK
+window.onGoogleLibraryLoad = initGoogleLogin;
 </script>
 </body>
 </html>
