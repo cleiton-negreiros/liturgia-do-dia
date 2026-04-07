@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-tema="claro">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Liturgia do Dia</title>
   <link rel="manifest" href="/manifest.json"/>
   <meta name="theme-color" content="#6B1A1A"/>
@@ -19,257 +19,52 @@
       --ouro:#C8A96E; --ouro-claro:#e8c98a; --vinho:#6B1A1A; --vinho2:#8B2222;
       --bg:#FAF6EF; --bg-card:#fff; --bg-bar:#fff;
       --texto:#2C2016; --cinza:#7a6e64; --linha:#e0d5c3; --aclamacao-bg:#fdf8f0;
-
-      /* ── ZOOM: controlado pelos botões A+ / A- ──────────────────
-         Valor padrão: 1 (100%). Range: 0.8 (80%) a 1.5 (150%).
-         Salvo no localStorage para lembrar entre sessões.
-         Todas as fontes de conteúdo usam calc(base * var(--zoom)) */
-      --zoom: 1;
-
-      /* ── LARGURA DA SIDEBAR ─────────────────────────────────────
-         Em desktop: 200px. Em tablet: 56px (só ícones).
-         Em celular: sidebar some, vira bottom nav. */
-      --sidebar-w: 200px;
     }
     [data-tema="escuro"] {
       --vinho:#c05a52; --vinho2:#d96a60;
       --bg:#131110; --bg-card:#1c1916; --bg-bar:#181512;
       --texto:#e6ddd0; --cinza:#998e84; --linha:#2c2620; --aclamacao-bg:#1b1712;
     }
-    /* ══════════════════════════════════════════════════════════════
-       RESET E BASE
-       box-sizing: border-box significa que padding e border
-       são incluídos nas dimensões (width/height) — evita overflow.
-    ══════════════════════════════════════════════════════════════ */
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--texto);font-family:'EB Garamond',serif;min-height:100vh;transition:background .3s,color .3s;}
 
-    body {
-      background: var(--bg);
-      color: var(--texto);
-      font-family: 'EB Garamond', serif;
-      /* dvh = dynamic viewport height: se atualiza ao girar o celular.
-         100vh como fallback para navegadores que não suportam dvh. */
-      min-height: 100vh;
-      min-height: 100dvh;
-      transition: background .3s, color .3s;
-      /* CSS Grid no body define a estrutura GERAL da página:
-         3 linhas: header (tamanho automático) + área central
-         (1fr = ocupa todo o espaço restante) + footer (auto) */
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      grid-template-columns: 1fr;
-    }
+    /* HEADER */
+    header{background:var(--vinho);padding:1.8rem 1.5rem 1.3rem;text-align:center;position:relative;overflow:hidden;transition:background .3s;}
+    header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,var(--vinho2) 0%,var(--vinho) 70%);opacity:.65;}
+    header::after{content:'✦';position:absolute;font-size:18rem;color:rgba(200,169,110,0.05);top:-4rem;right:-3rem;line-height:1;pointer-events:none;}
+    .header-inner{position:relative;z-index:1;}
+    .site-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,5vw,2.5rem);color:var(--ouro);letter-spacing:.12em;text-transform:uppercase;}
+    .site-subtitle{font-family:'Lato',sans-serif;font-weight:300;color:rgba(255,255,255,.5);font-size:.78rem;letter-spacing:.25em;text-transform:uppercase;margin-top:.3rem;}
+    .ornamento{color:var(--ouro);font-size:1rem;margin:.7rem 0 .2rem;opacity:.7;}
 
-    /* ── HEADER ──────────────────────────────────────────────────── */
-    header {
-      background: var(--vinho);
-      padding: 1.4rem 1.5rem 1.1rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      transition: background .3s;
-      /* grid-column: 1 / -1 faz o header ocupar TODA a largura,
-         mesmo quando o body tiver múltiplas colunas */
-      grid-column: 1 / -1;
-    }
-    header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at top,var(--vinho2) 0%,var(--vinho) 70%); opacity:.65; }
-    header::after  { content:'✦'; position:absolute; font-size:14rem; color:rgba(200,169,110,0.05); top:-3rem; right:-2rem; line-height:1; pointer-events:none; }
-    .header-inner  { position:relative; z-index:1; }
-    .site-title    { font-family:'Cinzel',serif; font-size:clamp(1.2rem,4vw,2rem); color:var(--ouro); letter-spacing:.12em; text-transform:uppercase; }
-    .site-subtitle { font-family:'Lato',sans-serif; font-weight:300; color:rgba(255,255,255,.5); font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; margin-top:.25rem; }
-    .ornamento     { color:var(--ouro); font-size:.9rem; margin:.5rem 0 .1rem; opacity:.7; }
+    /* TOGGLE TEMA */
+    .toggle-tema{position:absolute;top:.9rem;right:1.2rem;z-index:10;display:flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;}
+    .toggle-label{font-family:'Lato',sans-serif;font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:.1em;text-transform:uppercase;}
+    .toggle-switch{width:38px;height:21px;background:rgba(255,255,255,.2);border-radius:99px;position:relative;transition:background .3s;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;}
+    .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;background:#fff;border-radius:50%;transition:transform .3s;}
+    [data-tema="escuro"] .toggle-switch{background:var(--ouro);border-color:var(--ouro);}
+    [data-tema="escuro"] .toggle-switch::after{transform:translateX(17px);}
 
-    /* ── TOGGLE TEMA ─────────────────────────────────────────────── */
-    .toggle-tema  { position:absolute; top:.8rem; right:1rem; z-index:10; display:flex; align-items:center; gap:.4rem; cursor:pointer; user-select:none; }
-    .toggle-label { font-family:'Lato',sans-serif; font-size:.62rem; color:rgba(255,255,255,.55); letter-spacing:.1em; text-transform:uppercase; }
-    .toggle-switch { width:36px; height:20px; background:rgba(255,255,255,.2); border-radius:99px; position:relative; transition:background .3s; border:1.5px solid rgba(255,255,255,.2); flex-shrink:0; }
-    .toggle-switch::after { content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform .3s; }
-    [data-tema="escuro"] .toggle-switch { background:var(--ouro); border-color:var(--ouro); }
-    [data-tema="escuro"] .toggle-switch::after { transform:translateX(16px); }
+    /* BARRA DATA */
+    .data-bar{background:var(--bg-bar);border-bottom:2px solid var(--linha);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;transition:background .3s,border-color .3s;}
+    .data-texto{font-family:'Cinzel',serif;font-size:.82rem;color:var(--vinho);letter-spacing:.07em;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:opacity .2s;}
+    .data-texto:hover{opacity:.7;}
+    .nav-datas{display:flex;gap:.4rem;}
+    .nav-datas button{background:none;border:1.5px solid var(--linha);color:var(--cinza);font-family:'Lato',sans-serif;font-size:.76rem;padding:.28rem .75rem;border-radius:2px;cursor:pointer;transition:all .2s;letter-spacing:.05em;}
+    .nav-datas button:hover,.nav-datas button.ativo{background:var(--vinho);border-color:var(--vinho);color:#fff;}
 
-    /* ── BOTÕES DE ZOOM ──────────────────────────────────────────────
-       CONCEITO: posicionados no canto esquerdo do header.
-       Eles mudam a variável CSS --zoom via JavaScript.
-       A+ aumenta 10%, A- diminui 10%.
-    ─────────────────────────────────────────────────────────────── */
-    .zoom-wrap {
-      position: absolute; top: .8rem; left: 1rem; z-index: 10;
-      display: flex; align-items: center; gap: .3rem;
-    }
-    .btn-zoom {
-      background: rgba(255,255,255,.12);
-      border: 1.5px solid rgba(255,255,255,.22);
-      color: #fff;
-      font-family: 'Lato', sans-serif;
-      font-weight: 700;
-      font-size: .7rem;
-      width: 26px; height: 26px;
-      border-radius: 3px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-      line-height: 1;
-      user-select: none;
-    }
-    .btn-zoom:hover  { background: rgba(255,255,255,.25); }
-    .btn-zoom:active { transform: scale(.92); }
-    .zoom-nivel {
-      font-family: 'Lato', sans-serif;
-      font-size: .6rem;
-      color: rgba(255,255,255,.5);
-      letter-spacing: .05em;
-      min-width: 26px;
-      text-align: center;
-    }
+    /* TABS */
+    .tabs-bar{background:var(--bg-bar);border-bottom:2px solid var(--linha);display:flex;transition:background .3s,border-color .3s;}
+    .tab-btn{flex:1;background:none;border:none;border-bottom:3px solid transparent;padding:.7rem .5rem;font-family:'Lato',sans-serif;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cinza);cursor:pointer;transition:all .2s;margin-bottom:-2px;}
+    .tab-btn.ativo{color:var(--vinho);border-bottom-color:var(--ouro);}
+    .tab-btn:hover:not(.ativo){color:var(--texto);}
 
-    /* ── ÁREA CENTRAL: SIDEBAR + CONTEÚDO ───────────────────────────
-       CONCEITO: CSS Grid com duas colunas.
-       Coluna 1 = sidebar (largura fixa definida por --sidebar-w)
-       Coluna 2 = conteúdo (1fr = ocupa todo o resto)
-       Em mobile (≤768px) voltaremos para coluna única.
-    ─────────────────────────────────────────────────────────────── */
-    .app-body {
-      display: grid;
-      grid-template-columns: var(--sidebar-w) 1fr;
-      grid-template-rows: 1fr;
-      min-height: 0; /* necessário para grid funcionar dentro de outro grid */
-    }
+    /* MAIN */
+    main{max-width:780px;margin:0 auto;padding:2rem 1.5rem 4rem;}
 
-    /* ── SIDEBAR ─────────────────────────────────────────────────────
-       position: sticky + top: 0 + height: 100dvh faz a sidebar
-       "grudar" enquanto o usuário rola o conteúdo.
-       overflow-y: auto permite scroll na sidebar se tiver muitos itens.
-    ─────────────────────────────────────────────────────────────── */
-    .sidebar {
-      background: var(--bg-bar);
-      border-right: 2px solid var(--linha);
-      display: flex;
-      flex-direction: column;
-      position: sticky;
-      top: 0;
-      height: 100dvh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      transition: background .3s, border-color .3s, width .3s;
-      scrollbar-width: none;
-      z-index: 50;
-    }
-    .sidebar::-webkit-scrollbar { display: none; }
-
-    /* Seção da data dentro da sidebar */
-    .sidebar-data {
-      padding: .9rem .8rem .6rem;
-      border-bottom: 1px solid var(--linha);
-    }
-    .sidebar-data-texto {
-      font-family: 'Cinzel', serif;
-      font-size: .72rem;
-      color: var(--vinho);
-      letter-spacing: .05em;
-      cursor: pointer;
-      display: flex; align-items: center; gap: .35rem;
-      margin-bottom: .5rem;
-      transition: opacity .2s;
-      line-height: 1.4;
-    }
-    .sidebar-data-texto:hover { opacity: .7; }
-    .sidebar-nav-datas {
-      display: flex;
-      gap: .25rem;
-      flex-wrap: wrap;
-    }
-    .sidebar-nav-datas button {
-      flex: 1;
-      min-width: 0;
-      background: none;
-      border: 1.5px solid var(--linha);
-      color: var(--cinza);
-      font-family: 'Lato', sans-serif;
-      font-size: .62rem;
-      padding: .22rem .3rem;
-      border-radius: 2px;
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: center;
-    }
-    .sidebar-nav-datas button:hover,
-    .sidebar-nav-datas button.ativo {
-      background: var(--vinho); border-color: var(--vinho); color: #fff;
-    }
-
-    /* Itens de navegação da sidebar */
-    .sidebar-nav { flex: 1; padding: .4rem 0; }
-    .tab-btn {
-      display: flex;
-      align-items: center;
-      gap: .7rem;
-      width: 100%;
-      background: none;
-      border: none;
-      border-left: 3px solid transparent;
-      padding: .75rem 1rem;
-      font-family: 'Lato', sans-serif;
-      font-size: .72rem;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--cinza);
-      cursor: pointer;
-      transition: all .2s;
-      text-align: left;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-    .tab-btn .tab-icone { font-size: 1.1rem; flex-shrink: 0; }
-    .tab-btn .tab-label { overflow: hidden; text-overflow: ellipsis; }
-    .tab-btn.ativo {
-      color: var(--vinho);
-      border-left-color: var(--ouro);
-      background: rgba(200,169,110,.08);
-      font-weight: 700;
-    }
-    .tab-btn:hover:not(.ativo) {
-      color: var(--texto);
-      background: rgba(200,169,110,.05);
-      border-left-color: var(--linha);
-    }
-
-    /* Rodapé da sidebar com versão */
-    .sidebar-footer {
-      padding: .7rem .8rem;
-      border-top: 1px solid var(--linha);
-      font-family: 'Lato', sans-serif;
-      font-size: .6rem;
-      color: var(--cinza);
-      letter-spacing: .05em;
-      opacity: .7;
-    }
-    .sidebar-footer a { color: var(--vinho); text-decoration: none; }
-
-    /* ── ÁREA DE CONTEÚDO ────────────────────────────────────────── */
-    .conteudo-area {
-      overflow-y: auto;
-      overflow-x: hidden;
-      height: 100dvh;
-      /* scroll-behavior: smooth faz ancoragens e scrollIntoView
-         rolarem suavemente em vez de pular */
-      scroll-behavior: smooth;
-    }
-
-    /* ── DATA-BAR (escondida em desktop — fica na sidebar) ────────── */
-    .data-bar { display: none; }
-
-    /* MAIN — sem max-width fixo: o grid da sidebar já limita */
-    main {
-      padding: 2rem 2rem 4rem;
-      width: 100%;
-    }
-
-    /* ── PAINEL ────────────────────────────────────────────────────── */
-    .painel { display: none; }
-    .painel.ativo { display: block; animation: fadeUp .35s ease both; }
+    /* PAINEL */
+    .painel{display:none;}
+    .painel.ativo{display:block;}
 
     /* LOADING / ERRO */
     .loading{text-align:center;padding:4rem 1rem;color:var(--cinza);font-family:'Lato',sans-serif;}
@@ -287,11 +82,11 @@
     .leitura-card+.leitura-card{border-top:1px solid var(--linha);padding-top:1.8rem;}
     @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
     .leitura-label{font-family:'Lato',sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cinza);margin-bottom:.3rem;}
-    .leitura-referencia{font-family:'Cinzel',serif;font-size:calc(1rem * var(--zoom));color:var(--vinho);font-weight:600;margin-bottom:.9rem;}
-    .leitura-texto{font-size:calc(1.1rem * var(--zoom));line-height:1.95;color:var(--texto);white-space:pre-wrap;}
+    .leitura-referencia{font-family:'Cinzel',serif;font-size:1rem;color:var(--vinho);font-weight:600;margin-bottom:.9rem;}
+    .leitura-texto{font-size:1.1rem;line-height:1.9;color:var(--texto);white-space:pre-wrap;}
 
     /* ACLAMAÇÃO */
-    .leitura-aclamacao{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid var(--ouro);padding:1.1rem 1.4rem;font-style:italic;font-size:calc(1rem * var(--zoom));color:var(--vinho);text-align:center;margin:.5rem 0 1.5rem;line-height:1.7;transition:background .3s;}
+    .leitura-aclamacao{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid var(--ouro);padding:1.1rem 1.4rem;font-style:italic;font-size:1rem;color:var(--vinho);text-align:center;margin:.5rem 0 1.5rem;line-height:1.7;transition:background .3s;}
 
     /* EVANGELHO */
     .evangelho-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;}
@@ -299,7 +94,7 @@
 
     /* ORAÇÃO (coleta, ofertório, etc.) */
     .oracao-card{background:var(--aclamacao-bg);border:1px solid var(--linha);border-left:3px solid rgba(200,169,110,0.4);padding:1.1rem 1.4rem;margin-bottom:1.5rem;animation:fadeUp .5s ease both;transition:background .3s;}
-    .oracao-card .leitura-texto{font-size:calc(1.05rem * var(--zoom));font-style:italic;}
+    .oracao-card .leitura-texto{font-size:1.05rem;font-style:italic;}
 
     /* COMPARTILHAR */
     .share-wrap{margin-top:1.8rem;padding-top:1.8rem;border-top:1px solid var(--linha);}
@@ -319,7 +114,7 @@
     /* LAUDES */
     .laudes-secao{margin-bottom:1.8rem;animation:fadeUp .5s ease both;}
     .laudes-secao-titulo{font-family:'Cinzel',serif;font-size:.95rem;color:var(--vinho);letter-spacing:.08em;margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid var(--linha);}
-    .laudes-texto{font-size:calc(1.08rem * var(--zoom));line-height:1.9;white-space:pre-wrap;color:var(--texto);}
+    .laudes-texto{font-size:1.08rem;line-height:1.9;white-space:pre-wrap;color:var(--texto);}
 
     /* ANOTAÇÕES */
     .notas-wrap{margin-top:0;}
@@ -332,7 +127,7 @@
       border-radius:3px;
       padding:1rem 1.2rem;
       font-family:'EB Garamond',serif;
-      font-size:calc(1.08rem * var(--zoom));
+      font-size:1.08rem;
       line-height:1.8;
       color:var(--texto);
       resize:vertical;
@@ -386,205 +181,34 @@
     footer a{color:var(--vinho);text-decoration:none;}
 
 
-    /* ══════════════════════════════════════════════════════════════
-       RESPONSIVIDADE — LEIA COMO UM LIVRO, DE CIMA PARA BAIXO:
-
-       1. Desktop (sem @media): sidebar + conteúdo lado a lado
-       2. Tablet estreito (≤960px): sidebar só com ícones
-       3. Mobile portrait (≤768px): sidebar vira bottom nav
-       4. Mobile landscape: sidebar fina com ícones, header compacto
-    ══════════════════════════════════════════════════════════════ */
-
-    /* ── 2. TABLET ESTREITO / LAPTOP PEQUENO ───────────────────────
-       CONCEITO: --sidebar-w muda para 56px (só cabe o ícone).
-       Os labels de texto somem com display:none.
-       É o mesmo componente, menor — não precisamos duplicar HTML.
-    ─────────────────────────────────────────────────────────────── */
-    @media (max-width: 960px) and (min-width: 769px) {
-      :root { --sidebar-w: 56px; }
-      .tab-label         { display: none; }
-      .sidebar-data      { display: none; }
-      .sidebar-footer    { display: none; }
-      .tab-btn           { padding: .85rem; justify-content: center; }
-      .tab-btn .tab-icone { font-size: 1.25rem; }
-      header             { padding: 1rem 1.5rem .8rem; }
-      .site-title        { font-size: clamp(1rem, 3vw, 1.6rem); }
-      .ornamento         { display: none; }
-      main               { padding: 1.5rem 1.5rem 3rem; }
-    }
-
-    /* ── 3. MOBILE PORTRAIT (≤768px) ───────────────────────────────
-       CONCEITO: mudamos o layout COMPLETAMENTE.
-       O grid do .app-body vira UMA coluna (sidebar some).
-       A sidebar se transforma em bottom navigation bar
-       usando position:fixed na base da tela.
-       É o padrão de apps nativos (Instagram, WhatsApp, etc.)
-    ─────────────────────────────────────────────────────────────── */
+    /* ══ LANDSCAPE / RESPONSIVO ══ */
     @media (max-width: 768px) {
-      /* Grid volta para 1 coluna */
-      .app-body { grid-template-columns: 1fr; }
-
-      /* Sidebar: deixa de ser lateral, vira barra inferior fixa */
-      .sidebar {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        top: auto;
-        height: auto;
-        width: 100%;
-        flex-direction: row;        /* itens em linha horizontal */
-        border-right: none;
-        border-top: 2px solid var(--linha);
-        /* z-index alto: fica por cima do conteúdo */
-        z-index: 200;
-        overflow: visible;
-        /* safe-area-inset-bottom: espaço do indicador de gesto
-           no iPhone X e posteriores */
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .sidebar-data   { display: none; }
-      .sidebar-footer { display: none; }
-      .sidebar-nav    { display: flex; flex-direction: row; width: 100%; padding: 0; }
-
-      /* Cada item vira uma célula da bottom nav */
-      .tab-btn {
-        flex: 1;
-        flex-direction: column;     /* ícone em cima, label embaixo */
-        gap: .18rem;
-        padding: .45rem .2rem .35rem;
-        font-size: .55rem;
-        letter-spacing: .04em;
-        border-left: none;
-        border-top: 3px solid transparent;
-        justify-content: center;
-        align-items: center;
-      }
-      .tab-btn .tab-icone { font-size: 1.15rem; }
-      .tab-btn .tab-label { display: block; }
-      .tab-btn.ativo {
-        border-left-color: transparent;
-        border-top-color: var(--ouro);
-      }
-
-      /* Conteúdo ocupa toda a largura, com espaço para a bottom nav */
-      .conteudo-area {
-        height: auto;
-        min-height: calc(100dvh - 60px); /* subtrai altura da bottom nav */
-        padding-bottom: calc(64px + env(safe-area-inset-bottom));
-      }
-
-      /* Header compacto */
-      header { padding: .9rem 1rem .7rem; }
-      .site-title { font-size: clamp(1.1rem, 5vw, 1.5rem); }
-      .site-subtitle { display: none; }
-      .ornamento { display: none; }
-      .toggle-label { display: none; }
-
-      /* Data-bar reaparece (estava hidden no desktop) */
-      .data-bar {
-        display: flex;
-        background: var(--bg-bar);
-        border-bottom: 2px solid var(--linha);
-        padding: .45rem .9rem;
-        align-items: center;
-        justify-content: space-between;
-        gap: .5rem;
-        flex-wrap: wrap;
-        transition: background .3s, border-color .3s;
-      }
-      .data-texto {
-        font-family: 'Cinzel', serif; font-size: .75rem;
-        color: var(--vinho); letter-spacing: .05em;
-        cursor: pointer; display: flex; align-items: center; gap: .35rem;
-        transition: opacity .2s;
-      }
-      .data-texto:hover { opacity: .7; }
-      .nav-datas { display: flex; gap: .3rem; }
-      .nav-datas button {
-        background: none; border: 1.5px solid var(--linha); color: var(--cinza);
-        font-family: 'Lato', sans-serif; font-size: .68rem;
-        padding: .2rem .55rem; border-radius: 2px; cursor: pointer;
-        transition: all .2s; letter-spacing: .04em;
-      }
-      .nav-datas button:hover,
-      .nav-datas button.ativo { background:var(--vinho); border-color:var(--vinho); color:#fff; }
-
-      /* Conteúdo principal */
-      main { padding: 1.2rem 1rem 1.5rem; }
-
-      /* Botões de zoom menores */
-      .btn-zoom { width: 22px; height: 22px; font-size: .65rem; }
-
-      /* Texto ajustado para celular */
-      .leitura-texto { font-size: calc(.98rem * var(--zoom)); line-height: 1.85; }
-      .leitura-card  { padding: 1rem 0 1rem 1rem; margin-bottom: 1.2rem; }
-
-      /* Compartilhar em coluna */
-      .share-botoes  { flex-direction: column; gap: .4rem; }
-      .btn-share     { justify-content: center; }
+      .tabs-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab-btn  { white-space: nowrap; flex: none; padding: .7rem .8rem; font-size:.7rem; }
+    }
+    @media (orientation: landscape) and (max-height: 520px) {
+      header { padding: .8rem 1.5rem .7rem; }
+      .site-title { font-size: 1.3rem; }
+      .site-subtitle, .ornamento { display: none; }
+      .data-bar { padding: .4rem 1rem; }
+      main { padding: 1rem 1rem 2rem; }
+      .tab-btn { padding: .5rem .6rem; font-size: .68rem; }
+    }
+    @media (max-width: 400px) {
+      .nav-datas button { padding: .25rem .5rem; font-size: .7rem; }
+      .leitura-texto { font-size: 1rem; }
     }
 
-    /* ── 4. CELULAR EM LANDSCAPE ────────────────────────────────────
-       CONCEITO: celular girado tem pouca altura mas muita largura.
-       A sidebar fina (56px, só ícones) volta na lateral —
-       porque agora temos largura suficiente e precisamos de altura.
-       Mais ergonômico que uma bottom nav em landscape.
-    ─────────────────────────────────────────────────────────────── */
-    @media (max-width: 768px) and (orientation: landscape) {
-      /* Sidebar volta para a lateral, fina */
-      .app-body  { grid-template-columns: 52px 1fr; }
-      .sidebar {
-        position: sticky;
-        top: 0;
-        bottom: auto;
-        left: auto;
-        right: auto;
-        height: 100dvh;
-        width: 52px;
-        flex-direction: column;
-        border-right: 2px solid var(--linha);
-        border-top: none;
-        overflow-y: auto;
-        padding-bottom: 0;
-      }
-      .sidebar-nav { flex-direction: column; width: auto; padding: .3rem 0; }
-      .tab-btn {
-        flex-direction: column;
-        padding: .6rem .3rem;
-        border-left: 3px solid transparent;
-        border-top: none;
-        font-size: .5rem;
-        gap: .12rem;
-      }
-      .tab-btn.ativo { border-top-color: transparent; border-left-color: var(--ouro); }
-      .tab-label { display: block; }
-      .conteudo-area { height: 100dvh; padding-bottom: 0; }
-
-      /* Data-bar em linha para economizar altura */
-      .data-bar { padding: .3rem .8rem; }
-
-      /* Header ultra compacto */
-      header { padding: .5rem 1rem; }
-      .site-title    { font-size: clamp(.9rem, 3vw, 1.2rem); }
-      .ornamento     { display: none; }
-      .site-subtitle { display: none; }
-
-      /* Conteúdo */
-      main { padding: .8rem 1rem 2rem; }
-      .leitura-texto { font-size: calc(.93rem * var(--zoom)); line-height: 1.8; }
-      .leitura-card  { padding: .7rem 0 .7rem .9rem; margin-bottom: .9rem; }
+    @media(max-width:520px){
+      .data-bar{flex-direction:column;align-items:flex-start;}
+      main{padding:1.5rem 1rem 3rem;}
+      .toggle-label{display:none;}
     }
   </style>
 </head>
 <body>
 
 <header>
-  <!-- Botões de Zoom — canto esquerdo -->
-  <div class="zoom-wrap">
-    <button class="btn-zoom" onclick="ajustarZoom(-0.1)" title="Diminuir texto">A−</button>
-    <span class="zoom-nivel" id="zoom-nivel">100%</span>
-    <button class="btn-zoom" onclick="ajustarZoom(0.1)"  title="Aumentar texto">A+</button>
-  </div>
-  <!-- Toggle de tema — canto direito -->
   <div class="toggle-tema" onclick="alternarTema()">
     <span class="toggle-label" id="label-tema">ESCURO</span>
     <div class="toggle-switch"></div>
@@ -597,63 +221,26 @@
   </div>
 </header>
 
-<!-- ÁREA CENTRAL: sidebar (esquerda) + conteúdo (direita) -->
-<div class="app-body">
+<div class="data-bar">
+  <span class="data-texto" onclick="abrirCalendario()">
+    📅 <span id="data-hoje"></span>
+  </span>
+  <nav class="nav-datas">
+    <button id="btn-ontem"  onclick="irParaDia(-1)">← Ontem</button>
+    <button id="btn-hoje"   onclick="irParaHoje()" class="ativo">Hoje</button>
+    <button id="btn-amanha" onclick="irParaDia(1)">Amanhã →</button>
+  </nav>
+</div>
 
-  <!-- SIDEBAR — em desktop é lateral; em mobile vira bottom nav -->
-  <aside class="sidebar">
-    <!-- Data e navegação (visível só na sidebar desktop) -->
-    <div class="sidebar-data">
-      <div class="sidebar-data-texto" onclick="abrirCalendario()">
-        📅 <span id="data-hoje"></span>
-      </div>
-      <nav class="sidebar-nav-datas">
-        <button id="btn-ontem"  onclick="irParaDia(-1)">←</button>
-        <button id="btn-hoje"   onclick="irParaHoje()" class="ativo">Hoje</button>
-        <button id="btn-amanha" onclick="irParaDia(1)">→</button>
-      </nav>
-    </div>
-
-    <!-- Itens de navegação -->
-    <nav class="sidebar-nav">
-      <button class="tab-btn ativo" onclick="mudarTab('missa')">
-        <span class="tab-icone">✝</span><span class="tab-label">Santa Missa</span>
-      </button>
-      <button class="tab-btn" onclick="mudarTab('laudes')">
-        <span class="tab-icone">🌅</span><span class="tab-label">Laudes</span>
-      </button>
-      <button class="tab-btn" onclick="mudarTab('biblia')">
-        <span class="tab-icone">📖</span><span class="tab-label">Bíblia</span>
-      </button>
-      <button class="tab-btn" onclick="mudarTab('oracoes')">
-        <span class="tab-icone">🙏</span><span class="tab-label">Orações</span>
-      </button>
-      <button class="tab-btn" onclick="mudarTab('jose')">
-        <span class="tab-icone">🌿</span><span class="tab-label">São José</span>
-      </button>
-      <button class="tab-btn" onclick="mudarTab('notas')">
-        <span class="tab-icone">📝</span><span class="tab-label">Anotações</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      Liturgia do Dia · <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API</a>
-    </div>
-  </aside>
-
-  <!-- ÁREA DE CONTEÚDO (rola independente da sidebar) -->
-  <div class="conteudo-area">
-    <!-- Data-bar: hidden em desktop, aparece em mobile via CSS -->
-    <div class="data-bar">
-      <span class="data-texto" onclick="abrirCalendario()">
-        📅 <span id="data-hoje-mobile"></span>
-      </span>
-      <nav class="nav-datas">
-        <button id="btn-ontem-m"  onclick="irParaDia(-1)">← Ontem</button>
-        <button id="btn-hoje-m"   onclick="irParaHoje()" class="ativo">Hoje</button>
-        <button id="btn-amanha-m" onclick="irParaDia(1)">Amanhã →</button>
-      </nav>
-    </div>
+<!-- TABS -->
+<div class="tabs-bar">
+  <button class="tab-btn ativo" onclick="mudarTab('missa')">✝ Santa Missa</button>
+  <button class="tab-btn"       onclick="mudarTab('laudes')">🌅 Laudes</button>
+  <button class="tab-btn"       onclick="mudarTab('biblia')">📖 Bíblia</button>
+  <button class="tab-btn"       onclick="mudarTab('oracoes')">🙏 Orações</button>
+  <button class="tab-btn"       onclick="mudarTab('jose')">🌿 São José</button>
+  <button class="tab-btn"       onclick="mudarTab('notas')">📝 Anotações</button>
+</div>
 
 <main>
   <!-- PAINEL MISSA -->
@@ -736,8 +323,6 @@
     </div>
   </div>
 </main>
-  </div><!-- fim .conteudo-area -->
-</div><!-- fim .app-body -->
 
 <!-- INSTALL BTN -->
 <div class="btn-instalar-wrap">
@@ -767,6 +352,9 @@
   </div>
 </div>
 
+<footer>
+  Liturgia do Dia · <a href="https://github.com/Dancrf/liturgia-diaria" target="_blank">API Liturgia</a> · Laudes: <a href="https://liturgia.cancaonova.com" target="_blank">Canção Nova</a> · Feito com fé 🙏
+</footer>
 
 <script>
 // ══ CONSTANTES ══
@@ -824,7 +412,8 @@ function irParaDia(offset){ const d=new Date(hojeRef); d.setDate(hojeRef.getDate
 function irParaHoje(){ irParaData(new Date(hojeRef)); }
 function irParaData(d){
   dataSel=new Date(d); dataSel.setHours(0,0,0,0);
-  syncBotoes(); // atualiza data em sidebar e mobile bar
+  document.getElementById('data-hoje').textContent=dataBR(dataSel);
+  syncBotoes();
   laudesCarregadas=false;
   liturgiaAtual=null;
   carregarMissa();
@@ -834,19 +423,9 @@ function irParaData(d){
 function syncBotoes(){
   const ont=new Date(hojeRef); ont.setDate(hojeRef.getDate()-1);
   const ama=new Date(hojeRef); ama.setDate(hojeRef.getDate()+1);
-  // Sincroniza botões da sidebar (desktop) E da data-bar (mobile)
-  const isOntem = mesmoDia(dataSel,ont);
-  const isHoje  = mesmoDia(dataSel,hojeRef);
-  const isAmanha= mesmoDia(dataSel,ama);
-  ['btn-ontem','btn-ontem-m'].forEach(id => document.getElementById(id)?.classList.toggle('ativo', isOntem));
-  ['btn-hoje', 'btn-hoje-m' ].forEach(id => document.getElementById(id)?.classList.toggle('ativo', isHoje));
-  ['btn-amanha','btn-amanha-m'].forEach(id => document.getElementById(id)?.classList.toggle('ativo', isAmanha));
-  // Atualiza a data exibida em ambos os lugares
-  const textoData = dataBR(dataSel);
-  const elD = document.getElementById('data-hoje');
-  const elM = document.getElementById('data-hoje-mobile');
-  if(elD) elD.textContent = textoData;
-  if(elM) elM.textContent = textoData;
+  document.getElementById('btn-ontem').classList.toggle('ativo', mesmoDia(dataSel,ont));
+  document.getElementById('btn-hoje').classList.toggle('ativo',  mesmoDia(dataSel,hojeRef));
+  document.getElementById('btn-amanha').classList.toggle('ativo',mesmoDia(dataSel,ama));
 }
 
 // ══ CALENDÁRIO ══
@@ -943,8 +522,12 @@ function renderMissa(dados){
   if(L.primeiraLeitura){ html+=card('1ª Leitura',L.primeiraLeitura.referencia,L.primeiraLeitura.texto,d); d+=.1; }
   // Salmo
   if(L.salmo){ const t=(L.salmo.refrao?`Refrão: ${L.salmo.refrao}\n\n`:'')+(L.salmo.texto||''); html+=card('Salmo Responsorial',L.salmo.referencia,t,d); d+=.1; }
-  // 2ª Leitura
-  if(L.segundaLeitura){ html+=card('2ª Leitura',L.segundaLeitura.referencia,L.segundaLeitura.texto,d); d+=.1; }
+  // 2ª Leitura — só nos domingos e solenidades
+  // Verificação em 3 camadas para garantir que há texto real:
+  // 1) o objeto existe  2) o campo .texto existe  3) tem mais de 10 chars
+  if(L.segundaLeitura && L.segundaLeitura.texto && L.segundaLeitura.texto.trim().length > 10){
+    html+=card('2ª Leitura',L.segundaLeitura.referencia,L.segundaLeitura.texto,d); d+=.1;
+  }
   // Aclamação
   if(L.aclamacao&&L.aclamacao.texto){ html+=`<div class="leitura-aclamacao" style="animation-delay:${d}s">${L.aclamacao.texto}</div>`; d+=.1; }
   // Evangelho
@@ -1611,47 +1194,8 @@ window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredP
 window.addEventListener('appinstalled',()=>{ document.getElementById('btn-instalar').style.display='none'; deferredPrompt=null; });
 async function instalarApp(){ if(!deferredPrompt) return; deferredPrompt.prompt(); const{outcome}=await deferredPrompt.userChoice; if(outcome==='accepted') document.getElementById('btn-instalar').style.display='none'; deferredPrompt=null; }
 
-
-// ══════════════════════════════════════════════════════════════════
-// ZOOM DE TEXTO
-// AULA: Uma variável CSS controla o tamanho de TODAS as fontes.
-// Quando mudamos --zoom via JS, o CSS recalcula automaticamente.
-// Salvamos no localStorage para manter entre sessões.
-// ══════════════════════════════════════════════════════════════════
-let zoomAtual = 1;
-const ZOOM_MIN = 0.75;
-const ZOOM_MAX = 1.6;
-const ZOOM_PASSO = 0.1;
-
-function ajustarZoom(delta) {
-  // Math.max e Math.min garantem que ficamos dentro do range permitido
-  // .toFixed(2) evita problemas de ponto flutuante: 1.0000000001
-  zoomAtual = parseFloat(
-    Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomAtual + delta)).toFixed(2)
-  );
-  // Aplica a variável CSS no elemento raiz (<html>)
-  document.documentElement.style.setProperty('--zoom', zoomAtual);
-  // Atualiza o indicador visual (ex: "110%")
-  const nivel = document.getElementById('zoom-nivel');
-  if (nivel) nivel.textContent = Math.round(zoomAtual * 100) + '%';
-  // Persiste no localStorage
-  localStorage.setItem('liturgia-zoom', zoomAtual);
-}
-
-function initZoom() {
-  const salvo = parseFloat(localStorage.getItem('liturgia-zoom') || '1');
-  // Valida o valor salvo antes de aplicar
-  if (salvo >= ZOOM_MIN && salvo <= ZOOM_MAX) {
-    zoomAtual = salvo;
-    document.documentElement.style.setProperty('--zoom', zoomAtual);
-    const nivel = document.getElementById('zoom-nivel');
-    if (nivel) nivel.textContent = Math.round(zoomAtual * 100) + '%';
-  }
-}
-
 // ══ INIT ══
 initTema();
-initZoom();
 document.getElementById('data-hoje').textContent=dataBR(dataSel);
 syncBotoes();
 carregarMissa();
